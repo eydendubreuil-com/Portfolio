@@ -1,0 +1,102 @@
+/* ==========================================================================
+   Keyframes — voir docs/effects.md pour les règles de retenue.
+   Les révélations au scroll passent par <Reveal/>, pas par ce fichier.
+   prefers-reduced-motion est neutralisé globalement dans globals.css.
+   ========================================================================== */
+
+/* Aurora — opacité volontairement basse : au-delà, l'effet « template IA » apparaît */
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1.1);
+  }
+  50% {
+    transform: translate3d(4%, 2%, 0) rotate(8deg) scale(1.18);
+  }
+  100% {
+    transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1.1);
+  }
+}
+
+/* Respiration des nœuds de la constellation */
+@keyframes node-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* Balayage d'un dégradé le long d'un trait */
+@keyframes line-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Dégradé animé — réservé à la bordure du bouton principal */
+@keyframes gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Tracé de ligne SVG — constellation et timeline */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--dash, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Flottement — une seule carte mise en avant, jamais une grille entière */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.anim-aurora {
+  animation: aurora-drift 28s var(--ease-in-out) infinite;
+}
+
+.anim-breathe {
+  animation: node-breathe 7s var(--ease-in-out) infinite;
+}
+
+.anim-line-flow {
+  background-size: 200% 100%;
+  animation: line-flow 6s linear infinite;
+}
+
+.anim-gradient-pan {
+  background-size: 200% 200%;
+  animation: gradient-pan 5s var(--ease-in-out) infinite;
+}
+
+.anim-draw {
+  stroke-dasharray: var(--dash, 1000);
+  animation: draw-line 2.4s var(--ease-out) forwards;
+}
+
+.anim-float {
+  animation: float-soft 6s var(--ease-in-out) infinite;
+}
