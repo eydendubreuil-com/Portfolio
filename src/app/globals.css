@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "../styles/animations.css";
 
+/* Par défaut, Tailwind v4 branche `dark:` sur `prefers-color-scheme`, pas sur
+   une classe. Or le site force un unique thème sombre via `.dark` sur <html>.
+   Sans cette redéfinition, un visiteur dont l'OS est en mode clair perdrait
+   toutes les variantes `dark:` de la barre de navigation : le libellé actif
+   tomberait en `text-black` sur fond bleu nuit, illisible.
+   Vérifié avant ajout : aucune autre utilitaire `dark:` dans le projet. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ==========================================================================
    Tokens — source de vérité : docs/STYLE.md (Partie 3 du document de brief).
    Aucun hex en dur ailleurs dans le projet.
@@ -204,8 +212,12 @@
 
   .glass {
     background: var(--glass-bg);
+    /* Pas de doublon `-webkit-` écrit à la main : le minifieur (Lightning CSS)
+       fusionne les deux et ne garde QUE la version préfixée, que Chromium ne
+       reconnaît pas (CSS.supports('-webkit-backdrop-filter') === false). Le
+       flou du verre disparaissait alors sur tout le site. Lightning CSS
+       préfixe seul selon les cibles ; on lui laisse le travail. */
     backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--line);
   }
 
@@ -213,6 +225,57 @@
     height: 1px;
     background: var(--grad-signature);
     border: 0;
+  }
+
+  /* --------------------------------------------------------------------
+     Barre de navigation « spotlight ».
+
+     Le composant réclame quatre classes qu'il ne définit pas lui-même
+     (spotlight-nav, -bg, glass-border, -shadow) plus deux variables de
+     couleur. Elles vivent ici et non dans un <style jsx> local, comme tout
+     le reste du CSS d'effet du projet, et parce que la démo d'origine les
+     tirait d'une feuille annexe absente de ce dépôt.
+
+     Les valeurs sont celles du site : verre bleu nuit, pas le gris neutre
+     de la démo, qui trouait la barre au-dessus du hero.
+     -------------------------------------------------------------------- */
+  .spotlight-nav {
+    /* Reprises de la démo : lumière noire sur fond clair. Le site n'a qu'un
+       thème sombre, mais on garde la branche claire pour que le composant
+       reste autonome s'il est réutilisé ailleurs. */
+    --spotlight-color: rgba(0, 0, 0, 0.08);
+    --ambience-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .dark .spotlight-nav {
+    /* Le halo au survol emprunte l'accent du site plutôt qu'un blanc pur :
+       sur ce fond bleu, un blanc à 15 % vire au gris et ne se rattache à
+       rien. La barre lumineuse de l'onglet actif, elle, reste franche. */
+    --spotlight-color: rgba(91, 140, 255, 0.28);
+    --ambience-color: var(--color-primary);
+  }
+
+  .spotlight-nav-bg {
+    background: var(--glass-bg);
+    /* Pas de doublon `-webkit-` écrit à la main : le minifieur (Lightning CSS)
+       fusionne les deux et ne garde QUE la version préfixée, que Chromium ne
+       reconnaît pas (CSS.supports('-webkit-backdrop-filter') === false). Le
+       flou du verre disparaissait alors sur tout le site. Lightning CSS
+       préfixe seul selon les cibles ; on lui laisse le travail. */
+    backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .glass-border {
+    /* `border` explicite et non `border-width` : le preflight Tailwind pose
+       `border: 0 solid`, donc une largeur sans couleur hériterait de
+       currentColor et cerclerait la barre d'un trait ink. */
+    border: 1px solid var(--line);
+  }
+
+  .spotlight-nav-shadow {
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 32px -12px rgba(5, 9, 20, 0.8);
   }
 
   .measure {

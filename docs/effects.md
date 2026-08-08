@@ -166,6 +166,86 @@ quarante secondes d'attente à 0,2 s le mot.
 lue par les lecteurs d'écran, et les fragments animés en `aria-hidden`. Sans ça, un
 lecteur d'écran énoncerait le texte mot par mot avec une pause entre chaque.
 
+## Barre de navigation « spotlight »
+
+`src/components/ui/spotlight-navbar.tsx`. Deux lumières distinctes sur une pastille
+de verre : un halo large qui suit le curseur, et un trait de 2 px sous l'onglet de la
+section courante. Les deux positions transitent par des variables CSS
+(`--spotlight-x`, `--ambience-x`) écrites en JS ; c'est ce qui évite de repeindre du
+React à chaque `mousemove`.
+
+### Ce que le composant attend de son hôte
+
+Comme `AnimatedRays`, il lit chez le site des choses qu'il ne définit pas :
+
+| Attendu | Fourni par | Sans ça |
+| --- | --- | --- |
+| `.spotlight-nav`, `.spotlight-nav-bg`, `.glass-border`, `.spotlight-nav-shadow` | `globals.css`, `@layer components` | Pastille transparente, sans bord ni verre |
+| `--spotlight-color`, `--ambience-color` | idem, branche `.dark` | Lumières noires de la démo, invisibles sur le fond bleu |
+| Classe `.dark` sur `<html>` | `layout.tsx` | Voir le piège n° 1 |
+
+La démo d'origine portait ces règles dans un `<style jsx>` local et dans une feuille
+annexe absente du dépôt. Tout est remonté dans `globals.css`, là où vit déjà le reste
+du CSS d'effet.
+
+### Pièges rencontrés
+
+1. **`dark:` ne suit pas la classe `.dark` par défaut.** En Tailwind v4, la variante
+   `dark:` est branchée sur `prefers-color-scheme`, pas sur une classe. Le composant
+   écrit `text-black dark:text-white` : sur un OS réglé en clair, seul `text-black`
+   s'appliquait — du texte noir sur du bleu nuit. Corrigé par
+   `@custom-variant dark (&:where(.dark, .dark *))`. Vérifié avant l'ajout qu'aucune
+   autre utilitaire `dark:` n'existait dans le projet, donc sans effet de bord.
+
+2. **`e.preventDefault()` tuait la navigation.** Le gestionnaire de clic fourni
+   annulait l'action par défaut du lien sans rien mettre à la place : cliquer sur un
+   onglet ne menait plus nulle part. Retiré — l'ancre native fait déjà le bon travail,
+   `scroll-behavior: smooth` et `scroll-padding-top` étant posés dans `globals.css`.
+   Mesuré : un clic pose le haut de section à 96 px, exactement la marge déclarée.
+
+3. **Le halo d'onglet actif mentait.** L'index actif n'était mis à jour qu'au clic :
+   en lisant « Projets », la lumière restait sous le premier onglet. Un indicateur qui
+   se trompe en permanence est pire que pas d'indicateur. `Nav.tsx` calcule donc la
+   section courante au défilement et la passe en `activeIndex`. La valeur `-1`
+   (aucune section, on est dans le hero) éteint la lumière — sans ce cas, la variable
+   `--ambience-x` gardait sa dernière position et la lumière restait allumée sous
+   « À propos » après un retour en haut de page.
+
+4. **`isDark` était un état mort.** Le composant observait la classe `.dark` avec un
+   `MutationObserver` pour alimenter un état jamais lu dans le rendu — les couleurs
+   venaient en réalité du CSS. Observateur et état retirés.
+
+5. **`framer-motion` n'est pas une dépendance déclarée.** Elle n'est présente que
+   comme dépendance transitive de `motion`. L'import passe par `motion/react`, qui
+   exporte le même `animate`.
+
+### Bug de fond découvert au passage
+
+`backdrop-filter` était **mort sur tout le site**, `.glass` compris — en-tête et menu
+mobile. La source déclarait la propriété standard *puis* son doublon `-webkit-`;
+Lightning CSS fusionnait les deux et ne gardait que la version préfixée, que Chromium
+ne reconnaît pas (`CSS.supports('-webkit-backdrop-filter', 'blur(4px)') === false`).
+Le doublon manuel a été retiré : le minifieur préfixe seul selon les cibles, et émet
+désormais bien les deux. Vérifié après correction : `backdropFilter: "blur(16px)"`.
+
+### Points de rupture
+
+La pastille n'est rendue qu'à partir de `lg` (1024 px). En dessous, les cinq libellés
+français débordent sur la marque ; le menu burger reprend la main, avec son piège à
+focus et son verrou de défilement inchangés. Mesuré à 1440 / 1280 / 1024 / 1023 / 800
+/ 390 px : aucun débordement horizontal, et jamais les deux navigations en même temps.
+
+### Contraste mesuré
+
+Sur les pixels rendus, texte sur le verre de la pastille : onglet actif **17,25:1**,
+onglet inactif **6,68:1**. Les deux tiennent AA largement.
+
+À noter : les libellés inactifs utilisent `text-neutral-400`, un gris **neutre**, là
+où le reste du site emploie `--color-ink-muted` (`#b8c2d9`), légèrement bleuté. Le
+contraste est bon, mais la teinte n'est pas celle de la palette. Laissé tel quel dans
+le composant pour qu'il reste réutilisable ; à basculer sur le token du site si
+l'écart se voit.
+
 ## Accessibilité
 
 `prefers-reduced-motion: reduce` est traité globalement dans `globals.css` : animations et
@@ -178,6 +258,8 @@ transitions tombent à `0.01ms`. En complément, côté JS :
 - la bordure lumineuse cesse de tourner et se fige sur un angle choisi — la lueur reste,
   seul le mouvement disparaît ;
 - la révélation mot à mot rend le texte tel quel, sans aucun fragment ni masque ;
+- la barre de navigation garde ses deux lumières mais sans ressort : les transitions
+  tombent à `0.01ms` comme le reste, la position reste juste ;
 - le ruban rend une image fixe et ne lance pas sa boucle ;
 - **aucune interaction curseur ne s'installe** : ni caméra du ruban, ni inclinaison de
   carte, ni réaction des mots. Les écouteurs ne sont même pas attachés, et rien n'est
