@@ -144,3 +144,22 @@
     --glow-angle: 120deg;
   }
 }
+
+/* ==========================================================================
+   AnimatedRays — le composant applique la classe `animate-aurora-bg` à sa
+   couche superposée mais ne fournit pas l'animation. C'est le défilement de
+   `background-position` qui fait dériver les rayons.
+   ========================================================================== */
+
+@keyframes aurora-bg {
+  from {
+    background-position: 50% 50%, 50% 50%;
+  }
+  to {
+    background-position: 350% 50%, 350% 50%;
+  }
+}
+
+.animate-aurora-bg {
+  animation: aurora-bg 60s linear infinite;
+}

@@ -49,6 +49,11 @@
 
   --grad-signature: linear-gradient(120deg, #5b8cff 0%, #6e56cf 52%, #2ed3f6 100%);
 
+  /* Consommée par AnimatedRays. Une couleur non définie rendrait tout le
+     `repeating-linear-gradient` invalide, et la couche de rayures ne
+     s'afficherait pas — seul l'arc-en-ciel resterait. */
+  --stripe-color: #ffffff;
+
   --glass-bg: rgba(18, 27, 51, 0.76);
   --glass-blur: 16px;
 

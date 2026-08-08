@@ -11,6 +11,7 @@ site** : la constellation du hero. Tous les autres doivent être presque imperce
 |---|---|---|
 | Séquence d'ouverture | ~1,4 s : eyebrow → titre → nœuds → lignes → texte → boutons → pastilles | `sections/Hero.tsx` |
 | Constellation | Un nœud par projet à son accent ; les 4 en ligne bien visibles, PawVolt discret. Survol : le nom apparaît et les lignes s'illuminent. Clic : défilement vers la carte. | `visual/Constellation.tsx` |
+| AnimatedRays | Aurora en fond de hero, masque radial ancré en haut à droite. Composant intégré **verbatim**, sans modification. | `ui/animated-rays.tsx` |
 | Ruban vrillé 3D | Bandeau de fond du hero. Projection perspective maison, tri en profondeur, éclairage par normale. **La souris pilote la caméra** (lacet et tangage) et la direction de la lumière. Tenu en texture : flou 2px, opacité 0,5. | `ui/twisting-ribbon.tsx` |
 | Champ d'étoiles | Canvas, ≤ 60 particules, `requestAnimationFrame` **mis en pause hors viewport** via IntersectionObserver | `visual/Starfield.tsx` |
 | Liseré de carte | 2px à l'accent du projet, au survol seulement | `sections/Projects.tsx` |
@@ -80,6 +81,35 @@ toute la carte, derrière le formulaire. Le verre reste sur la barre de navigati
    curseur. C'est au-delà de ce que ce document recommande. Le ruban est donc tenu
    en fond — flou de 2px, opacité 0,4 — pour rester une texture et laisser la
    constellation seule au premier plan. À surveiller si un cinquième arrive.
+
+## AnimatedRays — trois dépendances à fournir
+
+Le composant est repris tel quel. Il s'appuie sur trois choses qu'il ne fournit pas,
+et c'est le site qui les apporte — pas lui qu'on modifie :
+
+1. **La classe `dark` sur `<html>`.** Le composant lit
+   `document.documentElement.classList.contains("dark")` pour choisir son filtre.
+   Sans elle il prend sa branche claire, `invert(100%)`, et devient un aplat blanc
+   sur le fond bleu nuit. La classe est constante : le site n'a qu'un thème. Vérifié
+   au préalable qu'aucune utilitaire `dark:` n'existe ailleurs — l'ajout est sans
+   effet de bord.
+
+2. **`--stripe-color`.** Consommée dans le `repeating-linear-gradient` des rayures.
+   Une couleur non définie rend la déclaration entière invalide : la couche de
+   rayures disparaît et il ne reste que l'arc-en-ciel. Contrôlé après coup —
+   `background-image` compte bien **deux** gradients.
+
+3. **L'animation `animate-aurora-bg`.** La classe est appliquée par le composant mais
+   l'animation n'existait pas. C'est le défilement de `background-position` qui fait
+   dériver les rayons.
+
+**Ordre des calques.** Placés sous le bandeau du ruban, les rayons se coupaient net
+sur toute la moitié droite : le voile de ce bandeau se termine en fond opaque à sa
+hauteur exacte, produisant une couture horizontale franche. Les rayons passent donc
+au-dessus, et seul leur propre masque radial les adoucit.
+
+**Contraste.** Sous les rayons, l'eyebrow tombe de 6,34 à **4,77:1** — au-dessus du
+seuil AA, mais la marge est mince. À surveiller si les rayons gagnent en opacité.
 
 ## Passage en 3D interactif — ce que la mesure a montré
 

@@ -7,6 +7,7 @@ import { ButtonPrimary, ButtonSecondary } from "@/components/ui/Button";
 import { Starfield } from "@/components/visual/Starfield";
 import { Constellation } from "@/components/visual/Constellation";
 import { TwistingRibbon } from "@/components/ui/twisting-ribbon";
+import { AnimatedRays } from "@/components/ui/animated-rays";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -58,6 +59,14 @@ export function Hero() {
               "color-mix(in srgb, var(--color-bg) 55%, transparent) 52%, transparent 72%)",
           }}
         />
+      </div>
+
+      {/* Les rayons passent au-dessus du bandeau du ruban, pas dessous.
+          Le voile de ce bandeau se termine en fond opaque à sa hauteur exacte :
+          placés dessous, les rayons s'y coupaient net sur toute la moitié
+          droite. Au-dessus, seul leur propre masque radial les adoucit. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <AnimatedRays />
       </div>
 
       <Starfield />

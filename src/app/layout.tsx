@@ -57,8 +57,11 @@ const jsonLd = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // `dark` : AnimatedRays lit cette classe sur <html> pour choisir son filtre.
+  // Sans elle il applique invert(100%) et devient un aplat blanc. Le site n'a
+  // qu'un seul thème, la classe est donc constante.
   return (
-    <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="fr" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
         <a
           href="#projets"
