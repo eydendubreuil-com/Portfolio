@@ -1,5 +1,6 @@
 import { aboutIntro } from "@/content/about";
 import { Reveal } from "@/components/ui/Reveal";
+import TextAnimation from "@/components/ui/staggerText";
 
 /** Bandeau de repères : ouvre le bloc « à propos » sans empiéter sur les 3 sections. */
 export function Intro() {
@@ -8,14 +9,22 @@ export function Intro() {
       <div className="container-site">
         <Reveal>
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <h2 className="eyebrow">{aboutIntro.eyebrow}</h2>
+            <TextAnimation as="h2" className="eyebrow" divideBy="word" stagger={0.07}>
+              {aboutIntro.eyebrow}
+            </TextAnimation>
+
+            {/* Les repères montent un à un, comme les mots d'un titre. */}
             <ul className="flex flex-wrap gap-x-8 gap-y-3">
-              {aboutIntro.markers.map((m) => (
-                <li
-                  key={m}
-                  className="font-mono text-[0.8rem] tracking-[0.08em] text-ink-muted"
-                >
-                  {m}
+              {aboutIntro.markers.map((m, i) => (
+                <li key={m}>
+                  <TextAnimation
+                    className="font-mono text-[0.8rem] tracking-[0.08em] text-ink-muted"
+                    divideBy="word"
+                    stagger={0.05}
+                    delay={0.1 + i * 0.07}
+                  >
+                    {m}
+                  </TextAnimation>
                 </li>
               ))}
             </ul>
