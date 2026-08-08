@@ -87,3 +87,51 @@
   stroke-dasharray: var(--line-length, 1000);
   animation: draw-line 1.2s var(--ease-out) forwards;
 }
+
+/* ==========================================================================
+   Bordure lumineuse animée (GlowBorderCard)
+
+   `@property` est ce qui rend l'animation possible : sans lui, un angle de
+   conic-gradient déclaré en variable CSS n'est pas interpolable et l'animation
+   saute de 0deg à 360deg au lieu de tourner. Doit rester au premier niveau,
+   jamais dans un @layer.
+   ========================================================================== */
+
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.glow-conic {
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--glow-color-1),
+    var(--glow-color-2),
+    var(--glow-color-3),
+    var(--glow-color-4),
+    var(--glow-color-5),
+    var(--glow-color-6),
+    var(--glow-color-7),
+    var(--glow-color-8),
+    var(--glow-color-9),
+    var(--glow-color-10),
+    var(--glow-color-1)
+  );
+  animation: glow-spin var(--glow-animation-duration, 4s) linear infinite;
+}
+
+@keyframes glow-spin {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+
+/* Sans mouvement : le dégradé reste, figé sur un angle choisi. La lueur ne
+   disparaît pas, elle cesse simplement de tourner. */
+@media (prefers-reduced-motion: reduce) {
+  .glow-conic {
+    animation: none;
+    --glow-angle: 120deg;
+  }
+}

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { contact, site } from "@/content/site.config";
 import { Reveal } from "@/components/ui/Reveal";
+import { GlowBorderCard } from "@/components/ui/GlowBorderCard";
 
 // Le formulaire embarque react-hook-form + zod : chargé à la demande pour
 // tenir le budget JS du premier chargement.
@@ -21,10 +22,10 @@ export function Contact() {
     <section id="contact" className="section">
       <div className="container-site">
         <Reveal>
-          {/* Verre : un des deux seuls emplacements du site, avec la nav. */}
-          <div className="glass relative overflow-hidden rounded-[var(--radius-xl)] p-8 lg:p-16">
-            <span aria-hidden className="hairline-gradient absolute inset-x-0 top-0" />
-
+          {/* Seul emplacement de la bordure lumineuse sur tout le site : c'est le
+              dernier bloc de la page, celui où l'on veut que l'œil s'arrête. */}
+          <GlowBorderCard fill animationDuration={14} borderWidth="0.9em" blurAmount="0.7em" glowOpacity={0.85}>
+            <div className="p-8 lg:p-16">
             <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
               <div className="lg:col-span-5">
                 <p className="eyebrow mb-5">{contact.eyebrow}</p>
@@ -33,12 +34,12 @@ export function Contact() {
 
                 <a
                   href={`mailto:${contact.email}`}
-                  className="group mt-10 inline-flex items-center gap-3 font-display
-                             text-[length:var(--fs-h3)] font-semibold text-ink
-                             transition-colors hover:text-primary"
+                  className="group mt-10 flex items-center gap-3 font-display
+                             text-base font-semibold text-ink transition-colors
+                             hover:text-primary sm:text-[length:var(--fs-h3)]"
                 >
-                  <Mail size={20} strokeWidth={1.75} className="text-ink-faint" />
-                  {contact.email}
+                  <Mail size={20} strokeWidth={1.75} className="shrink-0 text-ink-faint" />
+                  <span className="min-w-0 break-all">{contact.email}</span>
                 </a>
 
                 <ul className="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-sm)]
@@ -73,7 +74,8 @@ export function Contact() {
                 <ContactForm />
               </div>
             </div>
-          </div>
+            </div>
+          </GlowBorderCard>
         </Reveal>
       </div>
     </section>
