@@ -103,9 +103,18 @@
   inherits: false;
 }
 
+/* Décalage piloté par la souris, ajouté à l'angle animé : la lueur se lit alors
+   comme une source de lumière qui suit le curseur. Hérité, car il est posé sur
+   le wrapper de la carte et consommé par l'élément de couronne. */
+@property --glow-offset {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: true;
+}
+
 .glow-conic {
   background: conic-gradient(
-    from var(--glow-angle),
+    from calc(var(--glow-angle) + var(--glow-offset, 0deg)),
     var(--glow-color-1),
     var(--glow-color-2),
     var(--glow-color-3),

@@ -9,7 +9,7 @@ export function Intro() {
       <div className="container-site">
         <Reveal>
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <TextAnimation as="h2" className="eyebrow" divideBy="word" stagger={0.07}>
+            <TextAnimation as="h2" className="eyebrow" divideBy="word" stagger={0.07} interactive radius={110}>
               {aboutIntro.eyebrow}
             </TextAnimation>
 
@@ -22,6 +22,8 @@ export function Intro() {
                     divideBy="word"
                     stagger={0.05}
                     delay={0.1 + i * 0.07}
+                    interactive
+                    radius={120}
                   >
                     {m}
                   </TextAnimation>

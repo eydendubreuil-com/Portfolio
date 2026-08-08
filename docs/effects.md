@@ -11,14 +11,14 @@ site** : la constellation du hero. Tous les autres doivent être presque imperce
 |---|---|---|
 | Séquence d'ouverture | ~1,4 s : eyebrow → titre → nœuds → lignes → texte → boutons → pastilles | `sections/Hero.tsx` |
 | Constellation | Un nœud par projet à son accent ; les 4 en ligne bien visibles, PawVolt discret. Survol : le nom apparaît et les lignes s'illuminent. Clic : défilement vers la carte. | `visual/Constellation.tsx` |
-| Ruban vrillé | Bandeau de fond en haut du hero. Canvas 2D, 400 segments, torsion sur 6 cycles. Flouté et à 40 % d'opacité : c'est une texture, pas un sujet. Boucle coupée hors viewport. | `ui/twisting-ribbon.tsx` |
+| Ruban vrillé 3D | Bandeau de fond du hero. Projection perspective maison, tri en profondeur, éclairage par normale. **La souris pilote la caméra** (lacet et tangage) et la direction de la lumière. Tenu en texture : flou 2px, opacité 0,5. | `ui/twisting-ribbon.tsx` |
 | Champ d'étoiles | Canvas, ≤ 60 particules, `requestAnimationFrame` **mis en pause hors viewport** via IntersectionObserver | `visual/Starfield.tsx` |
 | Liseré de carte | 2px à l'accent du projet, au survol seulement | `sections/Projects.tsx` |
 | Segment de parcours | Dégradé qui progresse au scroll | `sections/Timeline.tsx` |
 | Compteurs | Joués une seule fois à l'entrée dans le viewport | `sections/Stats.tsx` |
 | Scroll reveal | `opacity` + `translateY 16px`, décalage 60 ms, une seule fois | `ui/Reveal.tsx` |
-| Révélation mot à mot | Toute la section « À propos » : repères, eyebrows, questions, citations et réponses. Le pas décroît du titre vers le corps. | `ui/staggerText.tsx` |
-| Bordure lumineuse | Dégradé conique en rotation. **Trois emplacements, pas un de plus** : la carte de preuves de l'étude de cas (à l'accent de MindSet), le bloc de statistiques et la carte de contact. Animation coupée hors viewport. | `ui/GlowBorderCard.tsx` |
+| Révélation mot à mot 3D | Toute la section « À propos ». Chaque mot bascule en `rotateX` depuis sa ligne, avec sa propre perspective. **Les titres, eyebrows et citations réagissent au curseur** : les mots proches avancent et pivotent. Pas sur les réponses — voir plus bas. | `ui/staggerText.tsx` |
+| Bordure lumineuse 3D | Dégradé conique en rotation. **La carte s'incline sous le curseur** (`matrix3d` réelle, perspective 1200px) et la couronne s'incline 1,35× plus fort — l'écart de parallaxe fait le relief. L'angle du dégradé suit le curseur, ce qui le fait lire comme une source de lumière. **Trois emplacements, pas un de plus** : la carte de preuves de l'étude de cas (à l'accent de MindSet), le bloc de statistiques et la carte de contact. Animation coupée hors viewport. | `ui/GlowBorderCard.tsx` |
 
 ## Ce qui a été écarté
 
@@ -81,6 +81,39 @@ toute la carte, derrière le formulaire. Le verre reste sur la barre de navigati
    en fond — flou de 2px, opacité 0,4 — pour rester une texture et laisser la
    constellation seule au premier plan. À surveiller si un cinquième arrive.
 
+## Passage en 3D interactif — ce que la mesure a montré
+
+1. **Le tri en profondeur fait la 3D du ruban.** Sans lui, les segments se dessinent
+   dans l'ordre de l'index et les parties lointaines passent par-dessus les proches
+   quand la bande se croise — l'illusion tombe. Le tri se fait par tranches de
+   ~8 segments plutôt que segment par segment : trier finement casserait le rendu
+   par lots, qui est ce qui tient le budget de frame.
+
+2. **Trop de profondeur tue la 3D.** À `zAmp = 0.55 × hauteur`, le ruban partait si
+   loin qu'après division perspective il ne restait presque rien à l'écran : 950
+   pixels peints contre 3 100 en 2D. Ramené à 0,3, on garde le raccourci perspectif
+   *et* la présence.
+
+3. **Les positions des mots doivent être mesurées après la révélation.** Mesurées au
+   montage, elles enregistrent la position de départ — les mots sont alors décalés de
+   115 % sous leur ligne. Conséquence mesurée : le `translateZ` plafonnait à 5,9 px
+   au lieu de 16. La re-mesure est branchée sur `onAnimationComplete`.
+
+4. **Les positions sont en coordonnées document, pas viewport.** En viewport, elles se
+   périment à chaque défilement et il faudrait re-mesurer sur `scroll` — un recalcul
+   de mise en page par mot à chaque frame de scroll. En coordonnées document elles
+   restent valides et l'on compare avec `pageX/pageY`.
+
+5. **Deux écritures concurrentes sur `transform` s'annulent.** Motion pilote la
+   transform du mot pendant la révélation ; l'effet curseur vit donc sur un span
+   intérieur dédié. Même raison pour la carte : l'inclinaison passe par des custom
+   properties écrites en direct, jamais par un `setState` — un re-rendu de l'arbre
+   à 60 Hz pour un effet purement visuel.
+
+**Ce qui n'est volontairement pas interactif :** les réponses de la section « À
+propos ». 200 mots à mesurer à chaque `mousemove`, et surtout : on ne fait pas bouger
+un texte pendant qu'on le lit.
+
 ## La révélation mot à mot — deux pièges
 
 1. **Le déclencheur doit être sur le conteneur, jamais sur les mots.** Chaque mot vit
@@ -115,7 +148,10 @@ transitions tombent à `0.01ms`. En complément, côté JS :
 - la bordure lumineuse cesse de tourner et se fige sur un angle choisi — la lueur reste,
   seul le mouvement disparaît ;
 - la révélation mot à mot rend le texte tel quel, sans aucun fragment ni masque ;
-- le ruban rend une image fixe et ne lance pas sa boucle.
+- le ruban rend une image fixe et ne lance pas sa boucle ;
+- **aucune interaction curseur ne s'installe** : ni caméra du ruban, ni inclinaison de
+  carte, ni réaction des mots. Les écouteurs ne sont même pas attachés, et rien n'est
+  attaché non plus sur pointeur grossier (tactile).
 
 ## Test de validation
 

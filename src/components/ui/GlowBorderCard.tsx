@@ -32,6 +32,8 @@ export interface GlowBorderCardProps extends React.HTMLAttributes<HTMLDivElement
    * teinte ; en dessous de ~0,6 il se lit comme une nuance colorée.
    */
   glowOpacity?: number;
+  /** Amplitude d'inclinaison 3D sous le curseur, en degrés. 0 pour désactiver. */
+  tilt?: number;
   paused?: boolean;
   /** Couleur de la surface interne, qui masque le centre du dégradé. */
   surface?: string;
@@ -91,6 +93,7 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
       inset,
       colorPreset = "signature",
       glowOpacity = 0.55,
+      tilt = 7,
       paused = false,
       surface = "var(--color-surface)",
       style,
@@ -116,6 +119,72 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
       return () => io.disconnect();
     }, []);
 
+    /* Inclinaison 3D pilotée à la souris.
+       Écrite en styles directs plutôt qu'en state React : un setState par
+       mousemove re-rendrait l'arbre à 60 Hz. Ici on n'écrit que deux custom
+       properties, et le compositeur fait le reste. */
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (!el || !tilt) return;
+
+      const fine = window.matchMedia("(pointer: fine)");
+      const noMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      if (!fine.matches || noMotion.matches) return;
+
+      let raf = 0;
+      let tX = 0;
+      let tY = 0;
+      let curX = 0;
+      let curY = 0;
+      let live = false;
+
+      const apply = () => {
+        curX += (tX - curX) * 0.12;
+        curY += (tY - curY) * 0.12;
+        el.style.setProperty("--tilt-x", `${curX.toFixed(3)}deg`);
+        el.style.setProperty("--tilt-y", `${curY.toFixed(3)}deg`);
+        // La lueur suit : l'angle du dégradé conique s'aligne sur le curseur,
+        // ce qui la fait lire comme une source de lumière et non comme un décor.
+        el.style.setProperty("--glow-offset", `${(curY * 6).toFixed(1)}deg`);
+        if (Math.abs(tX - curX) > 0.01 || Math.abs(tY - curY) > 0.01) {
+          raf = requestAnimationFrame(apply);
+        } else {
+          live = false;
+        }
+      };
+
+      const kick = () => {
+        if (live) return;
+        live = true;
+        raf = requestAnimationFrame(apply);
+      };
+
+      const onMove = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        // Inversé sur X : pousser le curseur vers le haut doit incliner le
+        // haut de la carte vers l'arrière, pas vers l'avant.
+        tX = -ny * tilt * 2;
+        tY = nx * tilt * 2;
+        kick();
+      };
+
+      const onLeave = () => {
+        tX = 0;
+        tY = 0;
+        kick();
+      };
+
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+      return () => {
+        cancelAnimationFrame(raf);
+        el.removeEventListener("mousemove", onMove);
+        el.removeEventListener("mouseleave", onLeave);
+      };
+    }, [tilt]);
+
     // Le dégradé remplit toute la boîte ; c'est le débordement hors de la carte
     // qui forme la couronne visible. D'où inset = -borderWidth par défaut.
     const resolvedInset = inset ?? `calc(-1 * ${borderWidth})`;
@@ -135,6 +204,10 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
         className={cn("relative isolate", className)}
         style={
           {
+            // La perspective vit sur le wrapper ; sans elle, rotateX/rotateY
+            // produisent un simple cisaillement plat.
+            perspective: "1200px",
+            transformStyle: "preserve-3d",
             width,
             height: fill ? undefined : height,
             aspectRatio: fill || height ? undefined : aspectRatio,
@@ -155,6 +228,10 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
           )}
           style={{
             inset: resolvedInset,
+            // La couronne s'incline un peu plus que la carte : l'écart de
+            // parallaxe entre les deux plans est ce qui donne le relief.
+            transform:
+              "rotateX(calc(var(--tilt-x, 0deg) * 1.35)) rotateY(calc(var(--tilt-y, 0deg) * 1.35)) translateZ(-40px)",
             // En style inline, pas en classe utilitaire : `.glow-conic` vit hors
             // @layer, et son raccourci `animation` (qui remet play-state à
             // `running`) l'emporterait sur une utilitaire Tailwind, elle layered.
@@ -172,8 +249,13 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
         {/* Surface interne opaque : c'est elle qui masque le centre du dégradé
             et ne laisse voir que la couronne. */}
         <div
-          className="relative z-10 h-full w-full overflow-hidden rounded-[inherit] border border-[var(--line)]"
-          style={{ background: surface }}
+          className="relative z-10 h-full w-full overflow-hidden rounded-[inherit] border border-[var(--line)] [transition:transform_120ms_linear]"
+          style={{
+            background: surface,
+            transform:
+              "rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateZ(0)",
+            transformStyle: "preserve-3d",
+          }}
         >
           {children}
         </div>

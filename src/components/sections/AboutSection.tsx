@@ -30,6 +30,8 @@ export function AboutSection({
                 className="eyebrow mb-4"
                 divideBy="word"
                 stagger={0.06}
+                interactive
+                radius={110}
               >
                 {`${String(index + 1).padStart(2, "0")} — ${data.eyebrow}`}
               </TextAnimation>
@@ -43,6 +45,7 @@ export function AboutSection({
               stagger={0.08}
               maxStaggerTotal={0.9}
               delay={0.08}
+              interactive
             >
               {data.question}
             </TextAnimation>
@@ -55,6 +58,8 @@ export function AboutSection({
                 stagger={0.035}
                 maxStaggerTotal={0.8}
                 delay={0.15}
+                interactive
+                radius={140}
               >
                 {data.pullQuote}
               </TextAnimation>
