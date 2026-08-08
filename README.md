@@ -2,7 +2,7 @@
 
 Site portfolio personnel. Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Motion.
 
-**Sept projets, quatre en ligne.** Synthesia, EcoLeaf, MindSet & Business Lab, Cosmos
+**Douze sections, sept projets, quatre en ligne.** Synthesia, EcoLeaf, MindSet & Business Lab, Cosmos
 (en ligne) · PawVolt (en préparation) · EydenDesigns (en pause) · Auteur & Édition (en cours).
 
 ## Démarrer
@@ -20,7 +20,9 @@ npm run typecheck
 |---|---|
 | `src/content/` | **Tout le contenu du site.** Aucun texte n'est en dur dans un composant. |
 | `src/content/projects.ts` | Les 7 projets : description, objectif, techno, statut, lien, accent, position dans la constellation |
-| `src/content/about.ts` | Les réponses aux 3 questions — mots exacts, à ne pas réécrire |
+| `src/content/about.ts` | Les réponses aux 3 questions — mots exacts, à ne pas réécrire. Chacune devient une section du site. |
+| `src/content/positioning.ts` | Les 4 piliers de positionnement |
+| `src/content/focus.ts` | L'étude de cas MindSet & Business Lab |
 | `src/content/site.config.ts` | Identité, navigation, réseaux, hero, vision, contact |
 | `src/content/stats.ts` · `skills.ts` · `timeline.ts` | Chiffres, compétences, parcours |
 | `docs/STYLE.md` | La bible visuelle. Fait autorité sur toute valeur de style. |

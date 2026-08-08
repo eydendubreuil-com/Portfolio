@@ -16,7 +16,7 @@ export default function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#050816",
+          background: "#0B1224",
           padding: 72,
           fontFamily: "sans-serif",
         }}
@@ -27,7 +27,7 @@ export default function OpenGraphImage() {
             fontSize: 22,
             letterSpacing: 4,
             textTransform: "uppercase",
-            color: "#6C7590",
+            color: "#939DB6",
           }}
         >
           Portfolio
@@ -72,7 +72,7 @@ export default function OpenGraphImage() {
               }}
             />
           ))}
-          <div style={{ display: "flex", marginLeft: 16, fontSize: 22, color: "#6C7590" }}>
+          <div style={{ display: "flex", marginLeft: 16, fontSize: 22, color: "#939DB6" }}>
             7 projets · 4 en ligne
           </div>
         </div>

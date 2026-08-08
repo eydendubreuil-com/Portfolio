@@ -7,14 +7,18 @@
    ========================================================================== */
 
 @theme {
-  --color-bg: #050816;
-  --color-surface: #0e1122;
-  --color-card: #171b31;
-  --color-card-elevated: #1e2440;
+  /* Noir bleuté clair : le fond monte en luminosité et en bleu par rapport
+     au navy quasi noir d'origine, qui écrasait tout. */
+  --color-bg: #0b1224;
+  --color-surface: #121b33;
+  --color-card: #1a2544;
+  --color-card-elevated: #223057;
 
   --color-ink: #f4f6fb;
   --color-ink-muted: #b8c2d9;
-  --color-ink-faint: #6c7590;
+  /* Relevé de #6C7590 : sur le fond plus clair, l'ancienne valeur tombait
+     à 2,8:1 sur une carte survolée. #939DB6 tient AA (≥ 4,5:1) partout. */
+  --color-ink-faint: #939db6;
 
   --color-primary: #5b8cff;
   --color-secondary: #6e56cf;
@@ -22,7 +26,7 @@
 
   --color-status-live: #34d399;
   --color-status-building: #f5a524;
-  --color-status-planned: #6c7590;
+  --color-status-planned: #939db6;
 
   /* Satoshi n'est pas sur Google Fonts. Déposer les fichiers dans public/fonts/
      et ajouter un @font-face pour l'activer ; Inter assure le rendu d'ici là. */
@@ -45,7 +49,7 @@
 
   --grad-signature: linear-gradient(120deg, #5b8cff 0%, #6e56cf 52%, #2ed3f6 100%);
 
-  --glass-bg: rgba(14, 17, 34, 0.72);
+  --glass-bg: rgba(18, 27, 51, 0.76);
   --glass-blur: 16px;
 
   --glow-primary: 0 0 0 1px rgba(91, 140, 255, 0.2),

@@ -8,19 +8,33 @@ export const site = {
   title: "Eyden — Entrepreneur, créateur et développeur de projets IA",
   description:
     "Eyden construit un écosystème de projets qui mêlent IA, business et technologie : Synthesia, EcoLeaf, MindSet & Business Lab, Cosmos, PawVolt.",
+  /* `handle` est ce qui s'affiche : un pseudo se retient, pas une URL. */
   socials: [
-    { label: "Instagram", icon: "Instagram", url: "https://instagram.com/eyden.elite" },
-    { label: "TikTok", icon: "Music2", url: "https://tiktok.com/@eyden.elite" },
-    { label: "GitHub", icon: "Code", url: "https://github.com/eydendubreuil-com" },
+    {
+      label: "TikTok",
+      handle: "@Eyden.elite",
+      url: "https://www.tiktok.com/@eyden.elite",
+    },
+    {
+      label: "Instagram",
+      handle: "@eyden.elite",
+      url: "https://instagram.com/eyden.elite",
+    },
+    {
+      label: "GitHub",
+      handle: "eydendubreuil-com",
+      url: "https://github.com/eydendubreuil-com",
+    },
     {
       label: "LinkedIn",
-      icon: "Linkedin",
+      handle: "eyden-dubreuil",
       url: "https://www.linkedin.com/in/eyden-dubreuil-700b143a1/",
     },
   ],
   nav: [
-    { label: "Projets", href: "#projets" },
+    { label: "À propos", href: "#a-propos" },
     { label: "Parcours", href: "#parcours" },
+    { label: "Projets", href: "#projets" },
     { label: "Compétences", href: "#competences" },
     { label: "Vision", href: "#vision" },
   ],

@@ -41,18 +41,28 @@ export function Contact() {
                   {contact.email}
                 </a>
 
-                <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-[var(--line)] pt-8">
+                <ul className="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-sm)]
+                               border border-[var(--line)] bg-[var(--line)] sm:grid-cols-2">
                   {site.socials.map((s) => (
-                    <li key={s.label}>
+                    <li key={s.label} className="bg-surface">
                       <a
                         href={s.url}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="inline-flex items-center gap-1.5 font-mono text-xs uppercase
-                                   tracking-[0.12em] text-ink-faint transition-colors hover:text-ink"
+                        className="group flex h-full items-center justify-between gap-3 px-4 py-3
+                                   transition-colors hover:bg-card"
                       >
-                        {s.label}
-                        <ArrowUpRight size={13} strokeWidth={1.75} />
+                        <span>
+                          <span className="eyebrow block">{s.label}</span>
+                          <span className="mt-0.5 block font-mono text-sm text-ink">
+                            {s.handle}
+                          </span>
+                        </span>
+                        <ArrowUpRight
+                          size={15}
+                          strokeWidth={1.75}
+                          className="shrink-0 text-ink-faint transition-colors group-hover:text-ink"
+                        />
                       </a>
                     </li>
                   ))}

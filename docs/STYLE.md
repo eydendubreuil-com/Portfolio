@@ -15,12 +15,17 @@ Vercel, Anthropic. Sobre = sérieux.
 
 | Rôle | Hex |
 |---|---|
-| Fond | `#050816` |
-| Surface | `#0E1122` |
-| Carte | `#171B31` |
-| Carte survol | `#1E2440` |
+| Fond | `#0B1224` |
+| Surface | `#121B33` |
+| Carte | `#1A2544` |
+| Carte survol | `#223057` |
 | Filet | `rgba(184,194,217,0.10)` |
 | Filet fort | `rgba(184,194,217,0.20)` |
+
+> Palette éclaircie : le navy quasi noir d'origine (`#050816`) écrasait tout. Le fond monte
+> en luminosité et en bleu, et l'échelle des surfaces suit. Conséquence à ne pas oublier :
+> **éclaircir le fond fait baisser le contraste du texte discret**, d'où le relèvement de
+> `--color-ink-faint` ci-dessous.
 
 ### Texte
 
@@ -28,7 +33,7 @@ Vercel, Anthropic. Sobre = sérieux.
 |---|---|
 | Principal | `#F4F6FB` — blanc cassé, pas de `#FFF` pur sauf très gros titre |
 | Secondaire | `#B8C2D9` |
-| Discret | `#6C7590` |
+| Discret | `#939DB6` — relevé de `#6C7590`, qui tombait à 2,8:1 sur une carte survolée avec le fond éclairci |
 
 ### Accents
 
@@ -61,7 +66,7 @@ constellation. **Jamais sur du texte.**
 |---|---|
 | En ligne | `#34D399` |
 | En préparation / En cours | `#F5A524` |
-| En pause | `#6C7590` |
+| En pause | `#939DB6` |
 
 ---
 
@@ -109,7 +114,7 @@ l'ouverture du hero.
 
 ## 5. Verre
 
-`background: rgba(14,17,34,0.72); backdrop-filter: blur(16px)`.
+`background: rgba(18,27,51,0.76); backdrop-filter: blur(16px)`.
 **Deux éléments seulement** : la nav collante et la carte de contact. Les cartes projets
 restent opaques.
 

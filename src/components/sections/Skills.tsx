@@ -5,14 +5,14 @@ import { SectionHeader } from "@/components/ui/Eyebrow";
 /** Listes en mono, sans barres ni pourcentages : un niveau chiffré ne veut rien dire. */
 export function Skills() {
   return (
-    <section id="competences" className="section bg-surface">
+    <section id="competences" className="section">
       <div className="container-site">
         <SectionHeader eyebrow="Compétences" title="Ce que je sais faire, concrètement." />
 
         <div className="grid gap-px overflow-hidden rounded-[var(--radius-lg)]
                         border border-[var(--line)] bg-[var(--line)] md:grid-cols-3">
           {skills.map((group, i) => (
-            <Reveal key={group.title} index={i} className="bg-surface">
+            <Reveal key={group.title} index={i} className="bg-bg">
               <div className="h-full p-8">
                 <h3 className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-ink-faint">
                   {group.title}

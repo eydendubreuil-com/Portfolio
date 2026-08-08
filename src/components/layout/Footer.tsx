@@ -35,7 +35,8 @@ export function Footer() {
                   rel="noreferrer noopener"
                   className="text-sm text-ink-muted transition-colors hover:text-ink"
                 >
-                  {s.label}
+                  {s.label}{" "}
+                  <span className="font-mono text-xs text-ink-faint">{s.handle}</span>
                 </a>
               </li>
             ))}
