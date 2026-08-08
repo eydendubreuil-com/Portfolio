@@ -18,8 +18,10 @@ export interface Project {
   tech: string[];
   /** null => aucun bouton, jamais de lien mort */
   url: string | null;
-  /** null => placeholder à l'accent du projet */
+  /** null => placeholder composé, à l'accent du projet */
   image: string | null;
+  /** Affichée dans le placeholder quand `image` est null. Accroche réelle du projet. */
+  tagline?: string;
   accent: string;
   /** Position dans la constellation du hero, en % */
   node?: { x: number; y: number };
@@ -92,8 +94,12 @@ export const projects: Project[] = [
     goal: "Construire une marque complète, du produit à l'acquisition.",
     tech: ["Shopify", "Branding", "Publicité en ligne", "Funnels"],
     url: "https://pawvolt.eu/",
-    // Aucune capture reçue : la carte affiche un placeholder à l'accent.
+    // Aucun fichier de capture reçu, et pawvolt.eu est injoignable depuis le build.
+    // Déposer l'image dans public/projets/pawvolt.webp puis renseigner ce champ.
     image: null,
+    // Pas le slogan « Zéro nœud. Zéro chaos. » : il est déjà dans la description
+    // juste en dessous, et le répéter dans la même carte fait doublon.
+    tagline: "La laisse double intelligente",
     accent: "#FF7A18",
     node: { x: 50, y: 44 },
   },

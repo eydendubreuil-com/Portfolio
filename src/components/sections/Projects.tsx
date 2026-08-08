@@ -44,19 +44,37 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                        group-hover:scale-[1.03]"
           />
         ) : (
-          // Aucune capture disponible : bloc à l'accent, explicitement provisoire.
+          // Pas de capture disponible : on compose avec l'accroche réelle du projet
+          // plutôt qu'un bloc vide. Volontaire, pas une image manquante.
           <div
-            className="flex h-full w-full items-center justify-center"
+            className="flex h-full w-full flex-col justify-between p-7"
             style={{
-              background: `linear-gradient(140deg, ${project.accent}26 0%, transparent 70%)`,
+              background:
+                `radial-gradient(120% 100% at 15% 0%, ${project.accent}2E 0%, transparent 60%),` +
+                `linear-gradient(160deg, ${project.accent}14 0%, transparent 70%)`,
             }}
           >
             <span
-              className="font-display text-5xl font-black"
-              style={{ color: `${project.accent}66` }}
+              className="font-mono text-[0.7rem] uppercase tracking-[0.14em]"
+              style={{ color: `${project.accent}D0` }}
             >
-              {project.name.charAt(0)}
+              {project.name}
             </span>
+            {project.tagline ? (
+              <p
+                className="max-w-[14ch] font-display text-[1.6rem] font-extrabold leading-[1.05] tracking-[-0.03em]"
+                style={{ color: `${project.accent}` }}
+              >
+                {project.tagline}
+              </p>
+            ) : (
+              <span
+                className="font-display text-5xl font-black"
+                style={{ color: `${project.accent}66` }}
+              >
+                {project.name.charAt(0)}
+              </span>
+            )}
           </div>
         )}
         <div

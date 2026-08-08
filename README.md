@@ -34,8 +34,12 @@ npm run typecheck
 
 - **Les années du parcours.** `src/content/timeline.ts` affiche `—` : aucune date n'a été
   inventée. À remplir.
-- **La capture de PawVolt.** Aucune image reçue ; la carte affiche un bloc à l'accent orange.
-  Déposer le fichier dans `public/projets/` puis renseigner `image` dans `projects.ts`.
+- **La capture de PawVolt.** Aucun fichier reçu, et `pawvolt.eu` est injoignable depuis
+  l'environnement de build (`ERR_CONNECTION_RESET`) : impossible de la récupérer
+  automatiquement. En attendant, la carte compose un visuel à l'accent orange avec le
+  descriptif produit — c'est un choix, pas une image cassée. Pour la vraie capture :
+  déposer le fichier dans `public/projets/pawvolt.webp`, puis renseigner `image` et
+  retirer `tagline` dans `src/content/projects.ts`.
 - **La police Satoshi.** Voir la note dans `docs/STYLE.md` — Inter assure le rendu d'ici là.
 - **Les accents d'EydenDesigns (rose) et d'Auteur & Édition (ambre)** sont des propositions.
 
