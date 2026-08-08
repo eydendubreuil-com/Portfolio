@@ -16,7 +16,7 @@ site** : la constellation du hero. Tous les autres doivent être presque imperce
 | Segment de parcours | Dégradé qui progresse au scroll | `sections/Timeline.tsx` |
 | Compteurs | Joués une seule fois à l'entrée dans le viewport | `sections/Stats.tsx` |
 | Scroll reveal | `opacity` + `translateY 16px`, décalage 60 ms, une seule fois | `ui/Reveal.tsx` |
-| Bordure lumineuse | Dégradé conique en rotation autour de la carte. **Un seul emplacement : la carte de contact**, dernier bloc de la page. | `ui/GlowBorderCard.tsx` |
+| Bordure lumineuse | Dégradé conique en rotation. **Trois emplacements, pas un de plus** : la carte de preuves de l'étude de cas (à l'accent de MindSet), le bloc de statistiques et la carte de contact. Animation coupée hors viewport. | `ui/GlowBorderCard.tsx` |
 
 ## Ce qui a été écarté
 
@@ -40,10 +40,23 @@ site** : la constellation du hero. Tous les autres doivent être presque imperce
    d'origine dessinait ainsi un cadre blanc de 21px qui masquait entièrement le dégradé :
    la « lueur » visible n'était que cette bordure blanche floutée. D'où `border: 0` explicite.
 
-3. **Le flou moyenne les stops adjacents.** Des couleurs trop pâles donnent un halo blanc ;
+3. **`animation-play-state` doit passer en style inline.** `.glow-conic` vit hors
+   `@layer`, donc son raccourci `animation` — qui réinitialise `play-state` à
+   `running` — l'emporte sur l'utilitaire Tailwind `[animation-play-state:paused]`,
+   elle layered. La classe s'appliquait bien, sans aucun effet. Même piège de
+   cascade que le reset non-layered.
+
+4. **`accentRamp()` ne peut pas vivre dans le module du composant.**
+   `GlowBorderCard.tsx` est `"use client"` ; un composant serveur qui appelle une
+   fonction exportée par un module client fait échouer le build au prerender.
+   D'où `src/lib/accent-ramp.ts`, module neutre.
+
+5. **Le flou moyenne les stops adjacents.** Des couleurs trop pâles donnent un halo blanc ;
    alterner clair et foncé donne du gris. Il faut dix teintes saturées de luminance voisine,
    sur une plage restreinte (bleu → violet → cyan), pour que la moyenne reste colorée quel
-   que soit l'angle.
+   que soit l'angle. Même contrainte pour `accentRamp()`, qui dérive une rampe d'un accent
+   projet : l'écart de teinte est limité à ± 14°, au-delà l'or de MindSet virait au
+   vert-jaune.
 
 La carte de contact est en surface opaque et non en verre, contrairement à la règle des
 « deux éléments en verre ». Le dégradé qui tourne derrière transparaîtrait sinon à travers

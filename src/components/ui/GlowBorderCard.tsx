@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -39,11 +39,6 @@ export interface GlowBorderCardProps extends React.HTMLAttributes<HTMLDivElement
 
 export type ColorPreset = "signature" | "nature" | "ocean" | "sunset" | "aurora";
 
-/**
- * `signature` reprend les accents de docs/STYLE.md et c'est le seul preset à
- * utiliser sur ce site : les autres sont conservés pour réemploi ailleurs, mais
- * un vert pomme ou un orange saturé casserait la palette bleu nuit.
- */
 const colorPresets: Record<ColorPreset, string[]> = {
   /* Dix teintes saturées de luminance voisine, sans creux sombre.
      Le flou moyenne les stops adjacents : alterner clair et foncé produit du
@@ -105,6 +100,22 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
   ) => {
     const colors = gradientColors?.length ? gradientColors : colorPresets[colorPreset];
 
+    // Un dégradé conique flouté qui tourne coûte du compositing en continu.
+    // Avec plusieurs cartes sur la page, on ne l'anime que dans le viewport.
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [offscreen, setOffscreen] = useState(false);
+
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (!el) return;
+      const io = new IntersectionObserver(
+        ([entry]) => setOffscreen(!entry.isIntersecting),
+        { rootMargin: "120px" },
+      );
+      io.observe(el);
+      return () => io.disconnect();
+    }, []);
+
     // Le dégradé remplit toute la boîte ; c'est le débordement hors de la carte
     // qui forme la couronne visible. D'où inset = -borderWidth par défaut.
     const resolvedInset = inset ?? `calc(-1 * ${borderWidth})`;
@@ -116,7 +127,11 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
 
     return (
       <div
-        ref={ref}
+        ref={(node) => {
+          wrapperRef.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
         className={cn("relative isolate", className)}
         style={
           {
@@ -137,10 +152,13 @@ export const GlowBorderCard = React.forwardRef<HTMLDivElement, GlowBorderCardPro
           className={cn(
             "pointer-events-none absolute -z-10 rounded-[inherit]",
             "glow-conic",
-            paused && "[animation-play-state:paused]",
           )}
           style={{
             inset: resolvedInset,
+            // En style inline, pas en classe utilitaire : `.glow-conic` vit hors
+            // @layer, et son raccourci `animation` (qui remet play-state à
+            // `running`) l'emporterait sur une utilitaire Tailwind, elle layered.
+            animationPlayState: paused || offscreen ? "paused" : "running",
             opacity: glowOpacity,
             filter: `blur(${blurAmount})`,
             // Indispensable : le preflight Tailwind pose `border: 0 solid` sur

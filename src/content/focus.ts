@@ -51,10 +51,12 @@ export const focus = {
     title: "1,5 % de chaque vente pour le climat",
     body: "Reversé à l'action climatique via Stripe Climate. Ce n'est pas un argument marketing ajouté après coup : c'est prélevé sur chaque transaction, automatiquement.",
   },
+  /* Unité dans le label, jamais dans la valeur : en monospace une espace occupe
+     une cellule entière et « +214 h » se lit « +214  h ». */
   proof: [
     { value: "+25", label: "clients" },
-    { value: "+214 h", label: "de formation" },
-    { value: "4,9/5", label: "note moyenne" },
+    { value: "+214", label: "heures de formation" },
+    { value: "4,9", label: "note moyenne sur 5" },
   ],
   tech: ["Lovable", "Stripe", "Stripe Climate", "Brevo", "Zoho Mail", "Blog SEO", "Newsletter"],
 } as const;

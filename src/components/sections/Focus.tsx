@@ -2,6 +2,8 @@ import Image from "next/image";
 import { ArrowUpRight, Leaf } from "lucide-react";
 import { focus } from "@/content/focus";
 import { Reveal } from "@/components/ui/Reveal";
+import { GlowBorderCard } from "@/components/ui/GlowBorderCard";
+import { accentRamp } from "@/lib/accent-ramp";
 
 /** Étude de cas : le seul projet détaillé au-delà de sa carte. */
 export function Focus() {
@@ -43,13 +45,26 @@ export function Focus() {
 
           {/* Preuves chiffrées, affichées telles qu'elles sont revendiquées sur le site */}
           <Reveal index={1} className="lg:col-span-5">
-            <div className="flex h-full flex-col justify-between gap-8 rounded-[var(--radius-lg)] border border-[var(--line)] bg-card p-8">
+            {/* Lueur à l'accent du projet, pas à celui du site : la carte de
+                preuves appartient à MindSet, sa couleur doit le dire. */}
+            <GlowBorderCard
+              fill
+              className="h-full"
+              borderRadius="var(--radius-lg)"
+              gradientColors={accentRamp(focus.accent)}
+              animationDuration={18}
+              borderWidth="0.7em"
+              blurAmount="0.6em"
+              glowOpacity={0.7}
+              surface="var(--color-card)"
+            >
+            <div className="flex h-full flex-col justify-between gap-8 p-8">
               <ul className="flex flex-col gap-7">
                 {focus.proof.map((p) => (
                   <li key={p.label}>
                     {/* tracking serré : en monospace, l'espace et la virgule
                         prennent une cellule entière (« +214  h », « 4 , 9 »). */}
-                    <span className="block font-mono text-[2rem] leading-none tracking-[-0.07em] text-ink">
+                    <span className="block font-mono text-[2rem] leading-none tracking-[-0.1em] text-ink">
                       {p.value}
                     </span>
                     <span className="mt-2 block text-sm text-ink-faint">{p.label}</span>
@@ -66,6 +81,7 @@ export function Focus() {
                 <ArrowUpRight size={16} strokeWidth={1.75} />
               </a>
             </div>
+            </GlowBorderCard>
           </Reveal>
         </div>
 

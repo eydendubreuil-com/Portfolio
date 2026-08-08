@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 import { stats, type Stat } from "@/content/stats";
 import { SectionHeader } from "@/components/ui/Eyebrow";
+import { GlowBorderCard } from "@/components/ui/GlowBorderCard";
 
 /** Compteur joué une seule fois. Valeur finale d'emblée en reduced-motion. */
 function Counter({ stat, run }: { stat: Stat; run: boolean }) {
@@ -37,7 +38,7 @@ function Counter({ stat, run }: { stat: Stat; run: boolean }) {
   return (
     // tracking négatif : en monospace, la virgule occupe une cellule entière
     // et « 4,9 » se lit sinon « 4 , 9 ».
-    <span className="font-mono text-[clamp(2.25rem,4vw,3rem)] font-medium leading-none tracking-[-0.05em] text-ink tabular-nums">
+    <span className="font-mono text-[clamp(2.25rem,4vw,3rem)] font-medium leading-none tracking-[-0.1em] text-ink tabular-nums">
       {display}
       {stat.suffix ?? ""}
     </span>
@@ -53,17 +54,28 @@ export function Stats() {
       <div className="container-site">
         <SectionHeader eyebrow="En chiffres" title="Des faits, pas des promesses." />
 
-        <div
-          ref={ref}
-          className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-3 lg:grid-cols-6"
+        {/* Les chiffres sont la preuve du site : la lueur les désigne comme tels. */}
+        <GlowBorderCard
+          fill
+          borderRadius="var(--radius-lg)"
+          animationDuration={20}
+          borderWidth="0.8em"
+          blurAmount="0.7em"
+          glowOpacity={0.75}
+          surface="var(--color-card)"
         >
-          {stats.map((s) => (
-            <div key={s.label}>
-              <Counter stat={s} run={inView} />
-              <p className="mt-3 text-sm text-ink-faint">{s.label}</p>
-            </div>
-          ))}
-        </div>
+          <div
+            ref={ref}
+            className="grid grid-cols-2 gap-x-8 gap-y-12 p-8 md:grid-cols-3 lg:grid-cols-6 lg:p-12"
+          >
+            {stats.map((s) => (
+              <div key={s.label}>
+                <Counter stat={s} run={inView} />
+                <p className="mt-3 text-sm text-ink-faint">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </GlowBorderCard>
       </div>
     </section>
   );
