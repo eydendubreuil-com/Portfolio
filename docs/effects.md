@@ -11,6 +11,7 @@ site** : la constellation du hero. Tous les autres doivent être presque imperce
 |---|---|---|
 | Séquence d'ouverture | ~1,4 s : eyebrow → titre → nœuds → lignes → texte → boutons → pastilles | `sections/Hero.tsx` |
 | Constellation | Un nœud par projet à son accent ; les 4 en ligne bien visibles, PawVolt discret. Survol : le nom apparaît et les lignes s'illuminent. Clic : défilement vers la carte. | `visual/Constellation.tsx` |
+| Ruban vrillé | Bandeau de fond en haut du hero. Canvas 2D, 400 segments, torsion sur 6 cycles. Flouté et à 40 % d'opacité : c'est une texture, pas un sujet. Boucle coupée hors viewport. | `ui/twisting-ribbon.tsx` |
 | Champ d'étoiles | Canvas, ≤ 60 particules, `requestAnimationFrame` **mis en pause hors viewport** via IntersectionObserver | `visual/Starfield.tsx` |
 | Liseré de carte | 2px à l'accent du projet, au survol seulement | `sections/Projects.tsx` |
 | Segment de parcours | Dégradé qui progresse au scroll | `sections/Timeline.tsx` |
@@ -63,6 +64,23 @@ La carte de contact est en surface opaque et non en verre, contrairement à la r
 « deux éléments en verre ». Le dégradé qui tourne derrière transparaîtrait sinon à travers
 toute la carte, derrière le formulaire. Le verre reste sur la barre de navigation.
 
+## Le ruban de fond — ce qu'il a fallu régler
+
+1. **Le contraste du texte.** Les lobes clairs du ruban passaient sous la colonne de
+   texte et faisaient tomber l'eyebrow à **4,05:1**, sous le seuil AA. Un voile
+   dégradé côté gauche le remonte à 6,26:1 et laisse le ruban entier à droite, là
+   où il n'y a rien à lire. Mesuré au pixel, texte masqué, pas jugé à l'œil.
+
+2. **Un `fill()` par segment est trop cher.** La couleur ne change qu'aux paliers de
+   la palette et aux bascules de face, soit ~60 fois pour 400 segments. Regrouper les
+   segments consécutifs de même couleur en un seul tracé fait passer le hero de
+   48 à 56 fps en headless.
+
+3. **Quatre calques animés dans le hero.** Ruban, étoiles, constellation, halo au
+   curseur. C'est au-delà de ce que ce document recommande. Le ruban est donc tenu
+   en fond — flou de 2px, opacité 0,4 — pour rester une texture et laisser la
+   constellation seule au premier plan. À surveiller si un cinquième arrive.
+
 ## La révélation mot à mot — deux pièges
 
 1. **Le déclencheur doit être sur le conteneur, jamais sur les mots.** Chaque mot vit
@@ -96,7 +114,8 @@ transitions tombent à `0.01ms`. En complément, côté JS :
 - le défilement déclenché par un clic sur un nœud passe en `behavior: "auto"` ;
 - la bordure lumineuse cesse de tourner et se fige sur un angle choisi — la lueur reste,
   seul le mouvement disparaît ;
-- la révélation mot à mot rend le texte tel quel, sans aucun fragment ni masque.
+- la révélation mot à mot rend le texte tel quel, sans aucun fragment ni masque ;
+- le ruban rend une image fixe et ne lance pas sa boucle.
 
 ## Test de validation
 
