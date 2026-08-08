@@ -2,96 +2,81 @@
 @import "../styles/animations.css";
 
 /* ==========================================================================
-   Tokens — source de vérité : docs/STYLE.md
-   Aucune valeur de couleur, d'ombre ou de durée ne s'invente hors de ce fichier.
+   Tokens — source de vérité : docs/STYLE.md (Partie 3 du document de brief).
+   Aucun hex en dur ailleurs dans le projet.
    ========================================================================== */
 
 @theme {
-  /* Surfaces */
   --color-bg: #050816;
   --color-surface: #0e1122;
   --color-card: #171b31;
   --color-card-elevated: #1e2440;
 
-  /* Texte */
   --color-ink: #f4f6fb;
   --color-ink-muted: #b8c2d9;
   --color-ink-faint: #6c7590;
 
-  /* Accents */
   --color-primary: #5b8cff;
   --color-secondary: #6e56cf;
   --color-accent: #2ed3f6;
 
-  /* Accents par projet */
-  --color-synthesia: #6d5dfb;
-  --color-ecoleaf: #34d399;
-  --color-mindset: #c9a227;
-  --color-pawvolt: #ff7a18;
-
-  /* Statuts */
   --color-status-live: #34d399;
   --color-status-building: #f5a524;
   --color-status-planned: #6c7590;
 
-  /* Familles typographiques.
-     Satoshi n'est pas sur Google Fonts : dépose les fichiers dans public/fonts/
-     et déclare-les en @font-face pour l'activer. Inter prend le relais d'ici là. */
+  /* Satoshi n'est pas sur Google Fonts. Déposer les fichiers dans public/fonts/
+     et ajouter un @font-face pour l'activer ; Inter assure le rendu d'ici là. */
   --font-display: "Satoshi", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
-  /* Rayons */
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 22px;
   --radius-xl: 28px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 :root {
-  /* Filets — non exposés en utilitaires Tailwind, utilisés via var() */
   --line: rgba(184, 194, 217, 0.1);
   --line-strong: rgba(184, 194, 217, 0.2);
 
-  /* Échelle typographique fluide */
-  --fs-hero: clamp(3.5rem, 9vw, 8rem);
-  --fs-h1: clamp(2.5rem, 5.5vw, 4.5rem);
-  --fs-h2: clamp(2rem, 4vw, 3.25rem);
-  --fs-h3: clamp(1.375rem, 2.2vw, 1.75rem);
-  --fs-body-lg: clamp(1.0625rem, 1.3vw, 1.25rem);
-  --fs-body: 1rem;
-  --fs-label: 0.75rem;
-
-  /* Dégradé signature — jamais au-delà de 4px d'épaisseur, hors CTA et constellation */
   --grad-signature: linear-gradient(120deg, #5b8cff 0%, #6e56cf 52%, #2ed3f6 100%);
 
-  /* Lueurs — la profondeur vient des bordures et des lueurs, jamais d'ombres noires */
-  --glow-primary: 0 0 0 1px rgba(91, 140, 255, 0.2),
-    0 8px 40px -12px rgba(91, 140, 255, 0.25);
-  --ring-focus: 0 0 0 2px #050816, 0 0 0 4px #5b8cff;
-
-  /* Verre — réservé à la navigation et à la carte de contact */
   --glass-bg: rgba(14, 17, 34, 0.72);
   --glass-blur: 16px;
 
-  /* Motion */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --glow-primary: 0 0 0 1px rgba(91, 140, 255, 0.2),
+    0 8px 40px -12px rgba(91, 140, 255, 0.25);
+  --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+
+  --fs-hero: clamp(3.5rem, 9vw, 8rem);
+  --fs-h1: clamp(2.5rem, 5vw, 4rem);
+  --fs-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --fs-h3: 1.25rem;
+  --fs-lead: clamp(1.125rem, 1.6vw, 1.375rem);
+  --fs-body: 1.0625rem;
+  --fs-label: 0.75rem;
+
+  --container-site: 1400px;
+  --space-section: 120px;
+  --space-section-lg: 180px;
+  --nav-height: 72px;
+
   --dur-fast: 160ms;
   --dur-base: 420ms;
   --dur-slow: 900ms;
-
-  /* Layout */
-  --container-max: 1400px;
-  --nav-height: 72px;
 }
 
 /* ==========================================================================
-   Reset et base
+   Reset et base.
 
-   Ces règles vivent dans @layer base : hors layer, un sélecteur d'élément
-   comme `a` ou `p` l'emporterait sur toutes les utilitaires Tailwind
-   (le CSS sans layer gagne toujours contre le CSS en layer).
+   Impérativement dans @layer base : hors layer, un sélecteur d'élément comme
+   `a` ou `p` bat TOUTES les utilitaires Tailwind (le CSS sans layer gagne
+   toujours contre le CSS en layer). Sans ça, `text-bg` et les marges `mt-*`
+   sont silencieusement ignorées.
    ========================================================================== */
 
 @layer base {
@@ -99,6 +84,10 @@
   *::before,
   *::after {
     box-sizing: border-box;
+  }
+
+  * {
+    min-width: 0;
   }
 
   html {
@@ -109,13 +98,13 @@
 
   body {
     margin: 0;
-    background-color: var(--color-bg);
+    background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: var(--fs-body);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
   }
 
@@ -123,18 +112,13 @@
   h2,
   h3,
   h4 {
+    margin: 0;
     font-family: var(--font-display);
     font-weight: 800;
-    line-height: 1.04;
     letter-spacing: -0.03em;
-    margin: 0;
+    line-height: 1.05;
+    color: var(--color-ink);
     text-wrap: balance;
-  }
-
-  h3 {
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
   }
 
   p {
@@ -147,8 +131,20 @@
     text-decoration: none;
   }
 
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
   ::selection {
-    background: rgba(91, 140, 255, 0.28);
+    background: rgba(91, 140, 255, 0.3);
     color: var(--color-ink);
   }
 
@@ -160,14 +156,13 @@
 }
 
 /* ==========================================================================
-   Utilitaires de composition — en @layer components pour rester surchargeables
-   par les utilitaires Tailwind posées sur le même élément.
+   Utilitaires de composition — en @layer components pour rester surchargeables.
    ========================================================================== */
 
 @layer components {
   .container-site {
     width: 100%;
-    max-width: var(--container-max);
+    max-width: var(--container-site);
     margin-inline: auto;
     padding-inline: 24px;
   }
@@ -178,14 +173,14 @@
     }
   }
 
-  /* Rythme vertical : les grands vides sont le budget premium du site */
+  /* Le vide est le budget premium du site : dernier réflexe à sacrifier. */
   .section {
-    padding-block: 120px;
+    padding-block: var(--space-section);
   }
 
   @media (min-width: 1024px) {
     .section {
-      padding-block: 180px;
+      padding-block: var(--space-section-lg);
     }
   }
 
@@ -193,14 +188,9 @@
     font-family: var(--font-mono);
     font-size: var(--fs-label);
     font-weight: 500;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-ink-faint);
-  }
-
-  /* Réservé aux traits fins et aux liserés, jamais à du texte */
-  .grad-line {
-    background: var(--grad-signature);
   }
 
   .glass {
@@ -210,13 +200,24 @@
     border: 1px solid var(--line);
   }
 
+  .hairline-gradient {
+    height: 1px;
+    background: var(--grad-signature);
+    border: 0;
+  }
+
   .measure {
     max-width: 68ch;
+  }
+
+  .lead {
+    font-size: var(--fs-lead);
+    color: var(--color-ink-muted);
   }
 }
 
 /* ==========================================================================
-   Accessibilité — les animations deviennent des fondus courts, jamais du mouvement
+   Accessibilité
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {

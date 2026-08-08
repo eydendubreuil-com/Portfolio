@@ -1,55 +1,49 @@
-# STYLE.md — Bible visuelle du portfolio Eyden
+# STYLE.md — Bible visuelle
 
 Référence unique pour toute décision de style. Aucune valeur ne s'invente hors de ce
-document.
+document. L'implémentation vit dans `src/app/globals.css` (tokens) et
+`src/styles/animations.css` (keyframes).
 
-> Récupéré depuis les pièces jointes du README d'origine. Fait autorité sur les couleurs,
-> les ombres et les animations. L'implémentation vit dans `src/app/globals.css`.
+Univers bleu nuit profond, premium, technologique. Références de niveau : Linear, Stripe,
+Vercel, Anthropic. Sobre = sérieux.
 
 ---
 
-## 1. Palette
-
-Univers « bleu nuit profond » : un fond navy-noir, des surfaces qui montent doucement en
-luminosité, trois accents lumineux tenus en laisse.
+## 1. Couleurs
 
 ### Surfaces
 
-| Rôle | Hex | Usage |
-|---|---|---|
-| Background | `#050816` | Fond global, unique |
-| Surface | `#0E1122` | Bandes, zones alternées |
-| Card | `#171B31` | Cartes, panneaux, champs |
-| Card elevated | `#1E2440` | Carte au survol |
-| Line | `rgba(184,194,217,0.10)` | Bordures, filets |
-| Line strong | `rgba(184,194,217,0.20)` | Bordures au survol |
+| Rôle | Hex |
+|---|---|
+| Fond | `#050816` |
+| Surface | `#0E1122` |
+| Carte | `#171B31` |
+| Carte survol | `#1E2440` |
+| Filet | `rgba(184,194,217,0.10)` |
+| Filet fort | `rgba(184,194,217,0.20)` |
 
 ### Texte
 
-| Rôle | Hex | Usage |
-|---|---|---|
-| Ink | `#F4F6FB` | Texte principal. Un blanc très légèrement bleuté plutôt que `#FFFFFF` pur : moins agressif sur fond sombre, plus premium. |
-| Ink muted | `#B8C2D9` | Texte secondaire, descriptions |
-| Ink faint | `#6C7590` | Labels, légendes, métadonnées |
+| Rôle | Hex |
+|---|---|
+| Principal | `#F4F6FB` — blanc cassé, pas de `#FFF` pur sauf très gros titre |
+| Secondaire | `#B8C2D9` |
+| Discret | `#6C7590` |
 
 ### Accents
 
-| Rôle | Hex | Usage |
-|---|---|---|
-| Primary | `#5B8CFF` | Accent principal : liens, focus, CTA, ligne active |
-| Secondary | `#6E56CF` | Accent secondaire, milieu de dégradé |
-| Accent | `#2ED3F6` | Accent lumineux, points de données, fin de dégradé |
+| Rôle | Hex |
+|---|---|
+| Primaire | `#5B8CFF` |
+| Secondaire | `#6E56CF` |
+| Cyan | `#2ED3F6` |
 
-Dégradé signature :
+Dégradé signature : `linear-gradient(120deg, #5B8CFF 0%, #6E56CF 52%, #2ED3F6 100%)`.
 
-```
-linear-gradient(120deg, #5B8CFF 0%, #6E56CF 52%, #2ED3F6 100%)
-```
+**Règle d'or :** jamais en aplat sur plus de 4px, sauf bouton principal et nœuds de la
+constellation. **Jamais sur du texte.**
 
-**Règle d'or du dégradé :** il ne remplit jamais une surface de plus de 4px d'épaisseur,
-sauf le bouton principal et les nœuds de la constellation.
-
-### Accents par projet
+### Accent par projet
 
 | Projet | Accent |
 |---|---|
@@ -57,14 +51,17 @@ sauf le bouton principal et les nœuds de la constellation.
 | EcoLeaf | `#34D399` |
 | MindSet & Business Lab | `#C9A227` |
 | PawVolt | `#FF7A18` |
+| Cosmos | `#4C6EF5` |
+| EydenDesigns | `#EC4899` |
+| Auteur & Édition | `#D9A55B` |
 
 ### Statuts
 
 | Statut | Hex |
 |---|---|
 | En ligne | `#34D399` |
-| En développement | `#F5A524` |
-| À venir | `#6C7590` |
+| En préparation / En cours | `#F5A524` |
+| En pause | `#6C7590` |
 
 ---
 
@@ -72,77 +69,67 @@ sauf le bouton principal et les nœuds de la constellation.
 
 | Rôle | Famille | Poids |
 |---|---|---|
-| Display (titres) | **Satoshi** | 800 titres, 600 sous-titres |
-| Corps | **Inter** | 400, 500 |
-| Utilitaire (labels, statuts, chiffres) | **JetBrains Mono** | 500 |
+| Titres | **Satoshi** | 800 · 600 pour les sous-titres |
+| Corps | **Inter** | 400, 500 · line-height 1.65 · max 68 caractères |
+| Labels, statuts, chiffres, technos | **JetBrains Mono** | 500 |
 
-- Titres serrés (`letter-spacing` négatif), corps aéré.
-- Corps : `line-height` 1.65, largeur max 68 caractères.
-- La mono ne sert jamais à du texte courant.
-- **Aucun texte en dégradé.** C'est le marqueur numéro un du portfolio amateur.
+Titres serrés (letter-spacing négatif), corps aéré. Ce contraste porte l'effet premium.
+La mono ne sert jamais à du texte courant. **Aucun texte en dégradé.**
 
-> Satoshi n'est pas distribué par Google Fonts. Tant que les fichiers ne sont pas déposés
-> dans `public/fonts/` avec une règle `@font-face`, Inter assure le rendu des titres.
+Échelle : `--fs-hero` `clamp(3.5rem,9vw,8rem)` · `--fs-h1` `clamp(2.5rem,5vw,4rem)` ·
+`--fs-h2` `clamp(1.75rem,3vw,2.5rem)` · `--fs-h3` `1.25rem` ·
+`--fs-lead` `clamp(1.125rem,1.6vw,1.375rem)` · `--fs-body` `1.0625rem` · `--fs-label` `0.75rem`.
+
+> **Satoshi n'est pas distribué par Google Fonts.** Tant que les fichiers ne sont pas
+> déposés dans `public/fonts/` avec une règle `@font-face`, Inter assure le rendu des titres.
 
 ---
 
 ## 3. Espacement et layout
 
-- Conteneur : `max-width: 1400px`, padding latéral `24px` mobile / `80px` desktop.
-- Rythme vertical entre sections : `120px` mobile, `180px` desktop.
-- Grille 12 colonnes desktop, gouttière 24px.
-- Rayons : `sm 10px`, `md 16px`, `lg 22px`, `xl 28px`.
+Conteneur `max-width: 1400px`, padding latéral 24px mobile / 80px desktop.
+Rythme vertical entre sections : 120px mobile, 180px desktop — le vide est le budget
+premium, dernier réflexe à sacrifier. Grille 12 colonnes. Rayons 10 / 16 / 22 / 28px.
 
 ---
 
-## 4. Ombres et lueurs
-
-La profondeur vient de **bordures qui s'éclaircissent** et de **lueurs d'accent très
-diffuses**, jamais d'ombres portées dures.
-
-| Token | Valeur |
-|---|---|
-| `--glow-primary` | `0 0 0 1px rgba(91,140,255,0.20), 0 8px 40px -12px rgba(91,140,255,0.25)` |
-| `--ring-focus` | `0 0 0 2px #050816, 0 0 0 4px #5B8CFF` |
-
-Interdits : `box-shadow` noire opaque, néon saturé, `text-shadow` lumineux.
-
----
-
-## 5. Glassmorphism
-
-- **Verre réservé à 2 éléments** : la barre de navigation collante et la carte de contact.
-- Recette : `background: rgba(14,17,34,0.72); backdrop-filter: blur(16px); border: 1px solid var(--line)`.
-- Les cartes projets sont des surfaces **opaques**.
-
----
-
-## 6. Motion
+## 4. Motion
 
 | Token | Valeur |
 |---|---|
 | `--ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` |
 | `--ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` |
-| `--dur-fast` | `160ms` |
-| `--dur-base` | `420ms` |
-| `--dur-slow` | `900ms` |
+| Durées | 160 / 420 / 900 ms |
 
-- Révélations au scroll : `opacity 0→1` + `translateY 16px→0`, décalage 60ms, une seule fois.
-- Une seule pièce spectaculaire : la constellation du hero.
-- `prefers-reduced-motion` respecté partout.
+Révélations au scroll : `opacity 0→1` + `translateY 16px→0`, décalage 60ms, une seule fois.
+`prefers-reduced-motion` respecté partout. **Un seul moment de mise en scène** :
+l'ouverture du hero.
 
 ---
 
-## 7. Icônes
+## 5. Verre
 
-Lucide React uniquement. Taille 16–20px, trait 1.75. **Jamais d'emoji** dans l'interface.
+`background: rgba(14,17,34,0.72); backdrop-filter: blur(16px)`.
+**Deux éléments seulement** : la nav collante et la carte de contact. Les cartes projets
+restent opaques.
 
 ---
 
-## 8. Le principe qui prime sur tout le reste
+## 6. Le principe qui prime
 
-Le vrai risque n'est pas de manquer d'effets, c'est d'en mettre trop. Avant de valider une
-section, retire un effet.
+Ne pas entasser aurora + particules + glow + cartes flottantes : c'est exactement ce qui
+fait « site généré ». Un seul moment fort (la constellation), le reste au calme.
+**Avant de valider une section : retire un effet.**
 
-Un site qui ressemble à Linear ou Stripe n'a presque pas d'effets visibles — il a un fond
-sobre, une typo parfaite, un espacement irréprochable, et **un** moment fort.
+---
+
+## 7. Note d'implémentation — la cascade
+
+Le reset (`body`, `h1`–`h4`, `p`, `a`, `ul`) est dans `@layer base`, et les utilitaires de
+composition (`.container-site`, `.section`, `.eyebrow`, `.glass`, `.measure`) dans
+`@layer components`.
+
+**Ce n'est pas cosmétique.** Hors layer, un sélecteur d'élément comme `a { color: inherit }`
+l'emporte sur *toutes* les utilitaires Tailwind, parce que le CSS sans layer gagne toujours
+contre le CSS en layer. Symptômes observés quand le reset était hors layer : texte de bouton
+invisible (`text-bg` ignoré) et marges `mt-*` sans effet. Ne pas sortir ces blocs des layers.

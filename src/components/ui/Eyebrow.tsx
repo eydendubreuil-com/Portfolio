@@ -5,10 +5,12 @@ export function SectionHeader({
   eyebrow,
   title,
   children,
+  id,
 }: {
   eyebrow: string;
   title: string;
   children?: ReactNode;
+  id?: string;
 }) {
   return (
     <header className="mb-16 lg:mb-24">
@@ -16,13 +18,13 @@ export function SectionHeader({
         <p className="eyebrow mb-5">{eyebrow}</p>
       </Reveal>
       <Reveal index={1}>
-        <h2 className="text-[length:var(--fs-h2)] max-w-[20ch]">{title}</h2>
+        <h2 id={id} className="max-w-[22ch] text-[length:var(--fs-h2)]">
+          {title}
+        </h2>
       </Reveal>
       {children ? (
         <Reveal index={2}>
-          <div className="measure mt-6 text-[length:var(--fs-body-lg)] text-ink-muted">
-            {children}
-          </div>
+          <div className="lead measure mt-6">{children}</div>
         </Reveal>
       ) : null}
     </header>
