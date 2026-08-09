@@ -17,7 +17,7 @@ const { chromium } = pw;
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ORIGIN = "http://localhost:8922";
+const ORIGIN = "http://localhost:8923";
 const ROOT = "/home/user/Portfolio";
 const OUT = "/home/user/Portfolio/preview.html";
 
@@ -104,11 +104,20 @@ await page.evaluate(() => {
     (d) => getComputedStyle(d).position === "fixed" && getComputedStyle(d).zIndex === "-10");
   if (couche) { couche.innerHTML = ""; couche.setAttribute("data-grille", ""); }
 
-  // Motion laisse des transform/opacity en ligne : on les neutralise pour que
-  // rien ne reste à mi-animation dans la page figée.
+  // Motion peut laisser des éléments à mi-animation. On les amène à leur état
+  // final ici — mais on les MARQUE, pour que le script puisse les remettre à
+  // zéro et rejouer la révélation au défilement. Aplatir sans marquer, c'était
+  // supprimer l'animation au lieu de la conserver.
   document.querySelectorAll("[style*='opacity']").forEach((el) => {
-    if (el.style.opacity && Number(el.style.opacity) < 1) el.style.opacity = "1";
+    if (el.style.opacity && Number(el.style.opacity) < 1) {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    }
   });
+  document.querySelectorAll('div[style*="opacity: 1"][style*="transform: none"]')
+    .forEach((el) => el.setAttribute("data-reveal", ""));
+  document.querySelectorAll('span[style*="transform-origin: 50% 100%"]')
+    .forEach((el) => el.setAttribute("data-mot", ""));
 });
 
 const bodyHtml = await page.evaluate(() => document.body.innerHTML);
@@ -308,6 +317,63 @@ const script = `
     addEventListener("scroll", maj, {passive:true}); addEventListener("resize", maj); maj();
   })();
 
+  /* ---------- Révélation de texte par masque ---------- */
+  (() => {
+    if (reduit) return;
+    const mots = [...document.querySelectorAll("[data-mot]")];
+    if (!mots.length) return;
+    // Un groupe par bloc de texte : la cascade doit se rejouer phrase par
+    // phrase, pas mot par mot à l'échelle de la page.
+    const groupes = new Map();
+    mots.forEach((sp) => {
+      const cle = sp.closest("p, h1, h2, h3, h4, li, blockquote") || sp.parentElement;
+      if (!groupes.has(cle)) groupes.set(cle, []);
+      groupes.get(cle).push(sp);
+    });
+    const CACHE = "perspective(620px) translateY(115%) rotateX(-78deg)";
+    const VU = "perspective(620px)";
+    const io = new IntersectionObserver((entrees) => {
+      entrees.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const liste = groupes.get(e.target) || [];
+        // Pas plafonné : au-delà, une réponse de 200 mots demanderait quarante
+        // secondes avant d'être lisible.
+        const pas = Math.min(55, 700 / Math.max(1, liste.length));
+        liste.forEach((sp, i) => {
+          sp.style.transition = "transform 620ms cubic-bezier(.16,1,.3,1) " + Math.round(i * pas) + "ms";
+          sp.style.transform = VU;
+        });
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
+    groupes.forEach((liste, cle) => {
+      liste.forEach((sp) => { sp.style.transition = "none"; sp.style.transform = CACHE; });
+      io.observe(cle);
+    });
+  })();
+
+  /* ---------- Révélation des blocs au défilement ---------- */
+  (() => {
+    if (reduit) return;
+    const blocs = [...document.querySelectorAll("[data-reveal]")];
+    if (!blocs.length) return;
+    const io = new IntersectionObserver((entrees) => {
+      entrees.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.style.transition = "opacity 520ms cubic-bezier(.16,1,.3,1), transform 520ms cubic-bezier(.16,1,.3,1)";
+        e.target.style.opacity = "1";
+        e.target.style.transform = "none";
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.1, rootMargin: "0px 0px -6% 0px" });
+    blocs.forEach((el) => {
+      el.style.transition = "none";
+      el.style.opacity = "0";
+      el.style.transform = "translateY(16px)";
+      io.observe(el);
+    });
+  })();
+
   /* ---------- Filtres de projets ---------- */
   (() => {
     const boutons = [...document.querySelectorAll("#projets button")];
@@ -330,8 +396,16 @@ const out = `<title>Eyden — Portfolio (aperçu vivant)</title>
 <style>
 ${css}
 :root { ${fontVars} }
+/* Le fond n'est posé QUE sur html.
+   La grille vit dans une couche en "z-index: -10", enfant de body. Un enfant à
+   z-index négatif remonte jusqu'au contexte d'empilement le plus proche — la
+   racine — et se peint donc AU-DESSUS du fond de html, mais SOUS le fond de
+   body. Tant que body n'a pas de fond à lui, le sien est propagé au canevas
+   racine et body reste transparent : la grille passe. Dès qu'on donne un fond
+   à html ET à body, la propagation n'a plus lieu, body peint le sien, et la
+   grille disparaît derrière — c'est exactement ce qui se produisait ici. */
 :root, :root[data-theme="dark"], :root[data-theme="light"] { color-scheme: dark; background: #0b1224; }
-body { background:#0b1224; color:#f4f6fb; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
+body { background: transparent; color:#f4f6fb; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
 </style>
 ${bodyHtml}
 <script>${script}<\/script>
