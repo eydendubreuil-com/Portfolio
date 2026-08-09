@@ -252,15 +252,20 @@ Un effet par endroit, et un seul effet qui traverse tout le site.
 
 | Section | Effet |
 | --- | --- |
-| Hero | Constellation |
+| Hero | Boutons magnétiques (la constellation a été retirée) |
 | Positionnement | Rayons animés (angle haut droit) |
 | À propos | Révélation mot à mot |
 | Parcours | Ruban vrillé (moitié droite) |
 | Focus | Bordure lumineuse (carte de preuve) |
-| Statistiques | Bordure lumineuse |
+| Compétences | Bandeau défilant |
+| Statistiques | Parallaxe à trois plans + bordure lumineuse |
 | Vision | Poussière d'étoiles |
-| Contact | Bordure lumineuse |
-| **Tout le site** | **Grille d'onde réactive à la souris** |
+| Contact | Bordure lumineuse + bouton d'envoi magnétique |
+| **Tout le site** | **Grille d'onde révélée par la souris**, **curseur contextuel** |
+
+Le hero ne porte plus de pièce décorative : la constellation occupait sa moitié
+droite, elle est retirée et la colonne de texte reprend cette largeur (52 % →
+59 % de la section, mesuré). Il ne reste que la grille d'onde, comme partout.
 
 Le hero portait au départ le ruban, les rayons, les étoiles ET la constellation :
 quatre pièces empilées au même endroit, cinq avec la grille. Le reste du site
@@ -299,6 +304,100 @@ le verre de la barre et le texte blanc du menu au lieu du fond de section. En
 redescendant l'élément sous la barre avant de mesurer : 4,64:1, conforme.
 
 Vérifié après répartition, quinze relevés : le pire est 4,64:1, aucun sous 4,5:1.
+
+## Les quatre interactions ajoutées
+
+### Bouton magnétique — `Magnetic.tsx`
+
+Sur les deux appels du hero et sur l'envoi du formulaire. C'est la seule
+interaction du site qui agit directement sur le taux de clic : la cible devient
+littéralement plus facile à atteindre.
+
+Deux garde-fous, tous deux mesurés :
+
+- **Déplacement plafonné à 12 px.** Au-delà, la cible fuit le curseur au lieu de
+  l'attirer et l'effet s'inverse. Relevé : 12,00 px exactement au plus près.
+- **Le contenu glisse moins que l'enveloppe** (facteur 0,35 — relevé 4,20 px pour
+  12,00 px). C'est ce décalage qui se lit comme une attraction ; sans lui, on voit
+  une boîte qui bouge.
+
+Le clic reste fonctionnel malgré le déplacement : vérifié, il pose le haut de
+`#projets` à 96 px, la marge de défilement déclarée.
+
+### Parallaxe à trois plans — `Parallax.tsx`
+
+Derrière les chiffres. Trois plans à trois amplitudes (relevées : 19, 45, 77 px
+d'écart entre les deux extrêmes du cadre). Aucune perspective n'est calculée —
+le cerveau lit la différence de vitesse comme de la distance, ce qui rend l'effet
+quasi gratuit puisque seules des `translate` sont animées.
+
+Piloté par le **pointeur**, jamais par le défilement : une parallaxe liée au
+scroll désolidarise le contenu du geste et donne le mal des transports.
+
+Les trois plans ne portent que des valeurs déjà affichées dans le bloc (`7`, `04`,
+`PROJETS`). Rien n'y est ajouté qui ne soit vérifiable deux centimètres plus bas.
+
+**Le piège qui a coûté le plus :** le composant posait `position: relative` en
+ligne. Cela **écrasait** le `absolute` passé en classe par l'appelant, `inset-0`
+cessait de s'appliquer, et l'hôte tombait à **1440×0**. Un élément de hauteur
+nulle n'intersecte jamais rien : l'`IntersectionObserver` ne le signalait jamais
+visible, le pointeur était ignoré, et l'effet restait monté, câblé et
+parfaitement immobile. C'est le placement qui appartient à l'appelant, pas au
+composant.
+
+### Bandeau défilant — `Marquee.tsx`
+
+Sous les compétences, avec le même contenu que les colonnes : les colonnes se
+lisent, le bandeau se regarde. Aucune information n'est réservée au seul bandeau,
+et la seconde copie est en `aria-hidden` pour ne pas doubler la lecture vocale.
+
+La boucle n'est invisible **que si** la translation vaut exactement la largeur
+d'une copie. Mesuré : 4 038 px contre 4 038 px, **écart nul**. La largeur est
+mesurée au montage, au redimensionnement et après `document.fonts.ready` — les
+métriques changent quand la police se substitue, et une durée figée en CSS
+donnerait une vitesse différente selon que la police de secours est encore
+affichée.
+
+Vitesse relevée : 84,7 px en 2 s, soit les 42 px/s réglés.
+
+### Curseur contextuel — `ContextCursor.tsx`
+
+Une pastille qui suit le pointeur et annonce l'action sur les zones portant
+`data-curseur`. Aujourd'hui : les cartes projet (« Voir », ou « Bientôt » quand
+le projet n'a pas encore d'URL).
+
+C'est l'effet le plus facile à rendre nuisible, puisqu'il touche à l'outil de
+navigation lui-même. Quatre règles, toutes vérifiées :
+
+1. **Le curseur système n'est jamais masqué globalement**, seulement sur la zone
+   survolée. Relevé sur un champ de saisie : `cursor: text`, zéro zone masquée.
+2. **Retour au natif quand la souris quitte la fenêtre**, sinon la pastille reste
+   collée au dernier point et le site paraît figé.
+3. **Rien sans pointeur fin ni en mouvement réduit.** En mobile, la pastille rend
+   `display: none`.
+4. `aria-hidden` et `pointer-events: none` : décorative, jamais annoncée, jamais
+   cliquable.
+
+Relevé : 10 px hors carte → 66 px avec le mot « Voir » sur la carte → retour à
+11,3 px en 0,3 s puis 10 px en sortant.
+
+**Un piège de classe à connaître :** la pastille portait `hidden` *et* `grid`.
+Les deux posent `display`, et c'est l'ordre dans la feuille compilée qui tranche,
+pas l'ordre dans l'attribut. Écrire les deux, c'est tirer à pile ou face. Corrigé
+en `hidden lg:grid`.
+
+### Deux fausses alertes, à ne pas rejouer
+
+Deux relevés annonçaient une panne qui n'existait pas :
+
+- Le bandeau mesuré à **0 px/s** — il était simplement **sous le viewport**, donc
+  en pause. C'est le comportement voulu, pas un défaut.
+- La pastille bloquée à **66 px** au-dessus d'un champ — la lecture tombait juste
+  après un défilement, avant que le `pointermove` suivant n'ait eu lieu.
+
+Dans les deux cas la conclusion « c'est cassé » venait du cadrage de la mesure.
+Avant de corriger un effet qui ne bouge pas, vérifier qu'il est bien dans le
+viewport et qu'un événement de pointeur a réellement été émis.
 
 ## Grille d'onde (fond de site)
 

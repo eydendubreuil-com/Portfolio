@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contactSchema, type ContactInput } from "@/lib/contact-schema";
+import { Magnetic } from "@/components/ui/Magnetic";
 
 type Status = { kind: "idle" | "sending" | "sent" | "error"; message?: string };
 
@@ -133,6 +134,8 @@ export default function ContactForm() {
         ) : null}
       </div>
 
+      {/* Magnétique : c'est le bouton qui décide de la conversion du site. */}
+      <Magnetic>
       <button
         type="submit"
         disabled={status.kind === "sending"}
@@ -143,6 +146,7 @@ export default function ContactForm() {
       >
         {status.kind === "sending" ? "Envoi…" : "Envoyer"}
       </button>
+      </Magnetic>
 
       <p
         aria-live="polite"

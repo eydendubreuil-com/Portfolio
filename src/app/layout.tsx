@@ -4,6 +4,7 @@ import { site } from "@/content/site.config";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { WaveGridBackground } from "@/components/ui/wave-grid-background";
+import { ContextCursor } from "@/components/ui/ContextCursor";
 import "./globals.css";
 
 const inter = Inter({
@@ -85,6 +86,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Aller au contenu
         </a>
+
+        {/* Une seule instance pour tout le site : la pastille suit le pointeur
+            et ne se transforme que sur les zones portant `data-curseur`. */}
+        <ContextCursor />
 
         <Nav />
         {children}

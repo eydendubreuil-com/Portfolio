@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 import { stats, type Stat } from "@/content/stats";
 import { SectionHeader } from "@/components/ui/Eyebrow";
+import { Parallax } from "@/components/ui/Parallax";
 import { GlowBorderCard } from "@/components/ui/GlowBorderCard";
 
 /** Compteur joué une seule fois. Valeur finale d'emblée en reduced-motion. */
@@ -50,8 +51,38 @@ export function Stats() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="statistiques" className="section surface-veil">
-      <div className="container-site">
+    <section id="statistiques" className="section surface-veil relative overflow-hidden">
+      {/* Trois plans derrière les chiffres, à trois amplitudes. Ils ne portent
+          que des valeurs déjà affichées dans le bloc — rien n'est ajouté ici
+          qui ne soit vérifiable deux centimètres plus bas. */}
+      <Parallax
+        depths={[12, 28, 48]}
+        className="pointer-events-none absolute inset-0 select-none"
+      >
+        <span
+          aria-hidden
+          className="absolute right-[4%] top-[8%] font-display text-[26vw] font-black leading-none
+                     text-[color-mix(in_srgb,var(--color-primary)_7%,transparent)]"
+        >
+          7
+        </span>
+        <span
+          aria-hidden
+          className="absolute left-[6%] bottom-[10%] font-mono text-[7vw] leading-none
+                     text-[color-mix(in_srgb,var(--color-accent)_8%,transparent)]"
+        >
+          04
+        </span>
+        <span
+          aria-hidden
+          className="absolute right-[22%] bottom-[22%] font-mono text-[1.1rem] tracking-[0.3em]
+                     text-[color-mix(in_srgb,var(--color-ink)_10%,transparent)]"
+        >
+          PROJETS
+        </span>
+      </Parallax>
+
+      <div className="container-site relative">
         <SectionHeader eyebrow="En chiffres" title="Des faits, pas des promesses." />
 
         {/* Les chiffres sont la preuve du site : la lueur les désigne comme tels. */}

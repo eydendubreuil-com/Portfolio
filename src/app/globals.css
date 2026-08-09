@@ -230,6 +230,14 @@
     border: 1px solid var(--line);
   }
 
+  /* Posée par ContextCursor sur la seule zone survolée, jamais globalement :
+     masquer le curseur système partout rend les champs et le texte
+     sélectionnable inutilisables. Retirée dès que le pointeur sort. */
+  .curseur-cache,
+  .curseur-cache * {
+    cursor: none;
+  }
+
   .hairline-gradient {
     height: 1px;
     background: var(--grad-signature);

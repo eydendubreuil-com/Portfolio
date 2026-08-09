@@ -19,6 +19,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: (index % 3) * 0.06 }}
+      // `data-curseur` : la pastille de ContextCursor s'ouvre et annonce
+      // l'action au survol de la carte. Uniquement sur les cartes — pas sur les
+      // champs de formulaire ni le texte courant, où masquer le curseur natif
+      // rendrait le site inutilisable.
+      data-curseur={project.url ? "Voir" : "Bientôt"}
       className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)]
                  border border-[var(--line)] bg-card scroll-mt-32
                  transition-colors duration-200 hover:border-[var(--line-strong)]

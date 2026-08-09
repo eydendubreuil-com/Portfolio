@@ -1,6 +1,7 @@
 import { skills } from "@/content/skills";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeader } from "@/components/ui/Eyebrow";
+import { Marquee } from "@/components/ui/Marquee";
 
 /** Listes en mono, sans barres ni pourcentages : un niveau chiffré ne veut rien dire. */
 export function Skills() {
@@ -28,6 +29,15 @@ export function Skills() {
             </Reveal>
           ))}
         </div>
+
+        {/* Bandeau : les mêmes compétences, en continu. Il ne remplace pas les
+            colonnes, il les prolonge — les colonnes se lisent, le bandeau se
+            regarde. Contenu identique, donc aucune information n'est réservée
+            au seul bandeau. */}
+        <Marquee
+          items={skills.flatMap((g) => g.items)}
+          className="mt-16 border-y border-[var(--line)] py-5"
+        />
       </div>
     </section>
   );

@@ -4,14 +4,13 @@ import { motion, useReducedMotion } from "motion/react";
 import { hero } from "@/content/site.config";
 import { liveProjects } from "@/content/projects";
 import { ButtonPrimary, ButtonSecondary } from "@/components/ui/Button";
-import { Constellation } from "@/components/visual/Constellation";
+import { Magnetic } from "@/components/ui/Magnetic";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 /**
- * Séquence d'ouverture (~1,4 s) : starfield → eyebrow → titre → nœuds →
- * lignes → paragraphe → boutons → pastilles. C'est le seul moment de mise
- * en scène du site.
+ * Séquence d'ouverture (~1,4 s) : eyebrow → titre → paragraphe → boutons →
+ * pastilles. C'est le seul moment de mise en scène du site.
  */
 export function Hero() {
   const reduced = useReducedMotion();
@@ -26,17 +25,11 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[92svh] items-center overflow-hidden pt-[var(--nav-height)]"
     >
-      {/* Un seul effet ici, et c'est la constellation.
-          Le ruban est parti au Parcours, les rayons au Positionnement, les
-          étoiles à la Vision : chaque section porte sa pièce, aucune n'en
-          porte quatre. La grille d'onde, elle, traverse tout le site — c'est
-          le seul effet qui a vocation à être partout.
-
-          La constellation occupe la moitié droite en desktop ; masquée en
-          dessous de lg, où le texte prend toute la largeur. */}
-      <div className="absolute inset-y-0 right-0 hidden w-1/2 lg:block">
-        <Constellation />
-      </div>
+      {/* Le hero ne porte plus aucune pièce décorative.
+          La constellation occupait la moitié droite ; elle est retirée, et le
+          texte reprend cette largeur. Le ruban est au Parcours, les rayons au
+          Positionnement, les étoiles à la Vision. Seule la grille d'onde passe
+          derrière, comme partout ailleurs sur le site. */}
 
       <div
         aria-hidden
@@ -44,7 +37,7 @@ export function Hero() {
       />
 
       <div className="container-site relative z-10 py-24">
-        <div className="lg:max-w-[52%]">
+        <div className="lg:max-w-[76%] xl:max-w-[68%]">
           <motion.p {...step(0.1)} className="eyebrow">
             {hero.eyebrow}
           </motion.p>
@@ -61,12 +54,16 @@ export function Hero() {
           </motion.p>
 
           <motion.div {...step(1.1)} className="mt-12 flex flex-wrap gap-4">
-            <ButtonPrimary href={hero.ctaPrimary.href}>
-              {hero.ctaPrimary.label}
-            </ButtonPrimary>
-            <ButtonSecondary href={hero.ctaSecondary.href}>
-              {hero.ctaSecondary.label}
-            </ButtonSecondary>
+            <Magnetic>
+              <ButtonPrimary href={hero.ctaPrimary.href}>
+                {hero.ctaPrimary.label}
+              </ButtonPrimary>
+            </Magnetic>
+            <Magnetic>
+              <ButtonSecondary href={hero.ctaSecondary.href}>
+                {hero.ctaSecondary.label}
+              </ButtonSecondary>
+            </Magnetic>
           </motion.div>
 
           {/* Une pastille par projet en ligne, cliquable vers sa carte. */}
