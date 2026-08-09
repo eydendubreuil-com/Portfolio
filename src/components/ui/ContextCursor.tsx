@@ -3,8 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Curseur contextuel : une pastille qui suit le pointeur et annonce l'action
- * avant le clic, sur les zones qui portent `data-curseur="…"`.
+ * Curseur contextuel : une pastille qui n'apparaît QUE sur les zones portant
+ * `data-curseur="…"`, pour y annoncer l'action avant le clic.
+ *
+ * Elle ne suit pas le pointeur en permanence. Une pastille toujours visible
+ * double le curseur système sans rien apporter, et se fige en point blanc posé
+ * au hasard dès qu'on capture la page. Au repos, sa taille est nulle et elle
+ * n'est pas peinte.
  *
  * C'est l'effet le plus facile à rater de la liste, parce qu'il touche à
  * l'outil de navigation lui-même. Quatre règles, toutes tenues ici :
@@ -39,8 +44,8 @@ export function ContextCursor() {
     let y = window.innerHeight / 2;
     let cx = x;
     let cy = y;
-    let size = 10;
-    let cSize = 10;
+    let size = 0;
+    let cSize = 0;
     let raf = 0;
 
     const tick = () => {
@@ -49,6 +54,9 @@ export function ContextCursor() {
       cSize += (size - cSize) * 0.18;
       dot.style.width = `${cSize.toFixed(1)}px`;
       dot.style.height = `${cSize.toFixed(1)}px`;
+      // Éteinte tant qu'elle n'est pas ouverte : un reliquat d'un pixel se
+      // verrait comme un point posé au hasard, surtout sur une capture.
+      dot.style.opacity = Math.min(1, Math.max(0, (cSize - 2) / 12)).toFixed(3);
       dot.style.transform = `translate(${(cx - cSize / 2).toFixed(1)}px, ${(cy - cSize / 2).toFixed(1)}px)`;
       raf = requestAnimationFrame(tick);
     };
@@ -65,7 +73,7 @@ export function ContextCursor() {
         setActive(true);
         cible.classList.add("curseur-cache");
       } else {
-        size = 10;
+        size = 0;
         setActive(false);
         setLabel(null);
         document
@@ -77,24 +85,19 @@ export function ContextCursor() {
     const onLeave = () => {
       setActive(false);
       setLabel(null);
-      dot.style.opacity = "0";
+      size = 0;
       document
         .querySelectorAll(".curseur-cache")
         .forEach((el) => el.classList.remove("curseur-cache"));
     };
-    const onEnter = () => {
-      dot.style.opacity = "1";
-    };
 
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", onLeave);
-    document.addEventListener("pointerenter", onEnter);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerleave", onLeave);
-      document.removeEventListener("pointerenter", onEnter);
       document
         .querySelectorAll(".curseur-cache")
         .forEach((el) => el.classList.remove("curseur-cache"));
