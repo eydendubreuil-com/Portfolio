@@ -20,7 +20,7 @@ export function AboutSection({
   surface?: boolean;
 }) {
   return (
-    <section id={data.id} className={`section ${surface ? "bg-surface" : ""}`}>
+    <section id={data.id} className={`section ${surface ? "surface-veil" : ""}`}>
       <div className="container-site">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">

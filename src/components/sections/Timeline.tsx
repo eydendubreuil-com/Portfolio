@@ -21,7 +21,7 @@ export function Timeline() {
   });
 
   return (
-    <section id="parcours" className="section bg-surface">
+    <section id="parcours" className="section surface-veil">
       <div className="container-site">
         <SectionHeader eyebrow="Parcours" title="Comment j'en suis arrivé là." />
 

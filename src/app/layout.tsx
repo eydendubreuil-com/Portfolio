@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { site } from "@/content/site.config";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
+import { WaveGridBackground } from "@/components/ui/wave-grid-background";
 import "./globals.css";
 
 const inter = Inter({
@@ -63,6 +64,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
+        {/* Grille d'onde, derrière toute la page.
+            `fixed` : le canvas fait la taille du viewport, pas celle du
+            document — le coût par image ne dépend donc pas de la longueur de
+            la page. `-z-10` et non `z-0` : un élément positionné à z-index 0
+            se peint APRÈS le contenu non positionné et recouvrirait les
+            sections. En négatif, il passe sous le contenu tout en restant
+            au-dessus du fond de page. */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+          <WaveGridBackground opacity={0.55} />
+        </div>
+
         <a
           href="#projets"
           className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[60]

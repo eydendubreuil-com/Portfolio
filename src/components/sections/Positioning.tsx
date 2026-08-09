@@ -4,7 +4,7 @@ import { SectionHeader } from "@/components/ui/Eyebrow";
 
 export function Positioning() {
   return (
-    <section id="positionnement" className="section bg-surface">
+    <section id="positionnement" className="section surface-veil">
       <div className="container-site">
         <SectionHeader eyebrow={positioning.eyebrow} title={positioning.title}>
           {positioning.lead}

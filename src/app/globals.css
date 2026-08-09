@@ -65,6 +65,15 @@
   --glass-bg: rgba(18, 27, 51, 0.76);
   --glass-blur: 16px;
 
+  /* Grille d'onde (WaveGridBackground). Lues par le composant, qui peint sur
+     un canvas et ne peut donc pas consommer une classe Tailwind.
+     `--wave-base` est la teinte au repos : volontairement proche du fond, la
+     grille ne doit se deviner que par intermittence. `--wave-high` est la
+     crête et le halo sous le curseur — c'est l'accent primaire du site, pas
+     le bleu électrique de la démo, qui sortait de la palette. */
+  --wave-base: #243154;
+  --wave-high: #5b8cff;
+
   --glow-primary: 0 0 0 1px rgba(91, 140, 255, 0.2),
     0 8px 40px -12px rgba(91, 140, 255, 0.25);
   --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
@@ -225,6 +234,15 @@
     height: 1px;
     background: var(--grad-signature);
     border: 0;
+  }
+
+  /* Voile de section, à la place de `bg-surface` sur les sections elles-mêmes.
+     La grille d'onde est posée en `-z-10`, donc sous le contenu : un aplat
+     opaque la masquerait complètement et l'effet ne se verrait que dans le
+     hero. Les cartes et les listes, elles, gardent un fond plein — c'est là
+     que se lit le texte dense. */
+  .surface-veil {
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   }
 
   /* --------------------------------------------------------------------

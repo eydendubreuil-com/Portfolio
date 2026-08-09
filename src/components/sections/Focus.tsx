@@ -8,7 +8,7 @@ import { accentRamp } from "@/lib/accent-ramp";
 /** Étude de cas : le seul projet détaillé au-delà de sa carte. */
 export function Focus() {
   return (
-    <section id="focus" className="section bg-surface">
+    <section id="focus" className="section surface-veil">
       <div className="container-site">
         <header className="mb-16 lg:mb-24">
           <Reveal>

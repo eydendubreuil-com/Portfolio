@@ -50,7 +50,7 @@ export function Stats() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="statistiques" className="section bg-surface">
+    <section id="statistiques" className="section surface-veil">
       <div className="container-site">
         <SectionHeader eyebrow="En chiffres" title="Des faits, pas des promesses." />
 

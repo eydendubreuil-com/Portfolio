@@ -246,6 +246,74 @@ contraste est bon, mais la teinte n'est pas celle de la palette. Laissé tel que
 le composant pour qu'il reste réutilisable ; à basculer sur le token du site si
 l'écart se voit.
 
+## Grille d'onde (fond de site)
+
+`src/components/ui/wave-grid-background.tsx`, montée une seule fois dans
+`layout.tsx`. Une grille régulière dont chaque sommet est déplacé par la somme de
+trois ondes lentes, plus un renflement gaussien centré sur le curseur. La couleur
+d'un segment interpole entre `--wave-base` (repos) et `--wave-high` (crête et halo).
+
+**Le code du composant n'était pas fourni** — seule la démo d'appel l'était.
+L'implémentation est donc écrite ici, contre le contrat visible dans cette démo
+(`colorBase`, `colorHigh`, `children`), pour qu'une version d'origine puisse s'y
+substituer sans toucher au reste.
+
+### Couleurs
+
+La démo utilise `#ffffff` / `#0055ff` : du blanc pur et un bleu électrique, tous
+deux hors palette sur un fond bleu nuit. Remplacés par deux tokens :
+`--wave-base: #243154` (à peine détaché du fond — la grille ne doit se deviner que
+par intermittence) et `--wave-high: #5b8cff`, l'accent primaire du site.
+
+### Tenir derrière toute la page
+
+Trois contraintes découlent du « sur l'intégralité du site » :
+
+1. **`position: fixed`.** Le canvas fait la taille du viewport, pas celle du
+   document. Le coût par image ne dépend donc pas de la longueur de la page.
+
+2. **`-z-10`, et surtout pas `z-0`.** Un élément positionné à `z-index: 0` se peint
+   *après* le contenu non positionné et recouvrirait toutes les sections. En
+   négatif, il passe sous le contenu tout en restant au-dessus du fond de page.
+
+3. **Les sections opaques masquaient tout.** Cinq sections portaient `bg-surface`,
+   un aplat plein : la grille n'aurait été visible que dans le hero. Elles passent
+   sur `.surface-veil` (`color-mix`, 88 % de `--color-surface`). Les cartes et les
+   listes, elles, gardent un fond plein — c'est là que se lit le texte dense.
+
+### Coût par image
+
+Une grille de 1 400 sommets, c'est ~2 800 segments. Un `stroke()` par segment
+mettait la page à genoux. Les segments sont donc rangés dans dix paliers de couleur
+et tracés en dix `Path2D`, soit **10 appels de tracé par image** au lieu de 2 800.
+`devicePixelRatio` est plafonné à 1,5. Mesuré : **58 images/s**.
+
+La boucle s'arrête quand l'onglet passe en arrière-plan (`visibilitychange`) — un
+fond animé qui continue de tourner dans un onglet caché, c'est de la batterie
+dépensée pour personne.
+
+### Contraste
+
+Méthode : masquer le texte, photographier son rectangle — ce qui reste est le fond
+composité, grille comprise — et retenir le pixel **le plus clair**, pas une moyenne.
+Une moyenne noierait justement le cas qui pose problème : une crête passant sous une
+lettre.
+
+Quinze relevés sur toutes les sections traversées. Le pire est
+**5,79:1** (eyebrow de « Compétences »), le meilleur 15,62:1. Aucun sous 4,5:1.
+
+À noter : une première série de mesures annonçait des échecs partout. Elles étaient
+fausses — la méthode devinait les pixels du texte au lieu de les lire, et tombait sur
+des traits de la grille. Corrigée avant toute conclusion.
+
+### Accessibilité
+
+- `prefers-reduced-motion` : une seule image peinte, aucune boucle lancée. Vérifié
+  identique entre deux relevés espacés de 1,2 s.
+- Le renflement ne s'installe que sur pointeur fin. Au doigt il suivrait le dernier
+  appui et resterait figé là.
+- `aria-hidden` et `pointer-events: none` sur la couche entière.
+
 ## Accessibilité
 
 `prefers-reduced-motion: reduce` est traité globalement dans `globals.css` : animations et
