@@ -5,6 +5,7 @@ import { motion, useScroll, useSpring } from "motion/react";
 import { timeline } from "@/content/timeline";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeader } from "@/components/ui/Eyebrow";
+import { TwistingRibbon } from "@/components/ui/twisting-ribbon";
 
 export function Timeline() {
   const ref = useRef<HTMLOListElement>(null);
@@ -21,8 +22,36 @@ export function Timeline() {
   });
 
   return (
-    <section id="parcours" className="section surface-veil">
-      <div className="container-site">
+    <section id="parcours" className="section surface-veil relative overflow-hidden">
+      {/* Le ruban est ici, pas dans le hero : un ruban qui serpente et se
+          vrille, derrière une frise, dit la même chose que la section. Il
+          n'occupe que la moitié droite — la liste, elle, est à gauche. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block"
+      >
+        <TwistingRibbon
+          segments={400}
+          waveSpeed={0.018}
+          waveAmplitude={1}
+          twistCycles={6}
+          opacity={0.4}
+          className="block h-full w-full blur-[2px]"
+        />
+        {/* Fondus haut/bas et vers la gauche : sans eux le bandeau se coupe net
+            aux bords de la section et vient buter sur le texte. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-surface)] via-transparent to-[var(--color-surface)]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-surface) 0%," +
+              "color-mix(in srgb, var(--color-surface) 55%, transparent) 30%, transparent 60%)",
+          }}
+        />
+      </div>
+
+      <div className="container-site relative">
         <SectionHeader eyebrow="Parcours" title="Comment j'en suis arrivé là." />
 
         <ol ref={ref} className="relative pl-8">

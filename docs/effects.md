@@ -246,6 +246,60 @@ contraste est bon, mais la teinte n'est pas celle de la palette. Laissé tel que
 le composant pour qu'il reste réutilisable ; à basculer sur le token du site si
 l'écart se voit.
 
+## Répartition des effets
+
+Un effet par endroit, et un seul effet qui traverse tout le site.
+
+| Section | Effet |
+| --- | --- |
+| Hero | Constellation |
+| Positionnement | Rayons animés (angle haut droit) |
+| À propos | Révélation mot à mot |
+| Parcours | Ruban vrillé (moitié droite) |
+| Focus | Bordure lumineuse (carte de preuve) |
+| Statistiques | Bordure lumineuse |
+| Vision | Poussière d'étoiles |
+| Contact | Bordure lumineuse |
+| **Tout le site** | **Grille d'onde réactive à la souris** |
+
+Le hero portait au départ le ruban, les rayons, les étoiles ET la constellation :
+quatre pièces empilées au même endroit, cinq avec la grille. Le reste du site
+n'avait rien. Elles ont été redistribuées — chaque section en porte une, aucune
+n'en porte quatre.
+
+Le placement suit le propos, pas la seule esthétique : un ruban qui serpente
+derrière une frise chronologique, un ciel derrière la section qui parle
+d'ambition et de long terme.
+
+### Ce que déplacer un effet a coûté
+
+- **Hero.** Le voile côté texte et le fondu du bandeau existaient uniquement à
+  cause du ruban. Partis avec lui.
+- **Rayons.** Leur masque interne est un `radial-gradient(ellipse at 100% 0%)`,
+  calibré pour s'éteindre loin de ce coin. Sur une boîte pleine section, il n'a
+  pas la place de s'éteindre et l'arc-en-ciel barre tout le bloc, texte compris.
+  Contraints à un quart de section en haut à droite, plus un masque radial et une
+  opacité de 0,5 posés sur le conteneur — jamais sur le composant.
+  À savoir : leur calque interne est en `background-attachment: fixed`, donc
+  ancré au viewport. Un conteneur plus petit le **recadre** au lieu de le
+  réduire ; c'est pourquoi il faut un masque, et pas seulement une boîte.
+- **Ruban.** Ses fondus passent de `--color-bg` à `--color-surface`, la section
+  d'accueil n'ayant pas le même fond que le hero.
+- **Étoiles.** Mesuré : une étoile tombant sous l'eyebrow de « Vision » le
+  faisait descendre à 2,12:1. Le champ est ramené à 18 % côté texte par un masque,
+  et garde toute son intensité à droite où il n'y a rien à lire. Résultat 4,64:1 —
+  la marge la plus fine de la page.
+
+### Un piège de mesure, pas de conception
+
+Une série de relevés donnait « Vision · eyebrow » en échec à 2,92:1 même après
+correction. La cause n'était pas la page : `scrollIntoViewIfNeeded` cale l'élément
+au ras du haut du viewport, donc **sous l'en-tête fixe**. La capture photographiait
+le verre de la barre et le texte blanc du menu au lieu du fond de section. En
+redescendant l'élément sous la barre avant de mesurer : 4,64:1, conforme.
+
+Vérifié après répartition, quinze relevés : le pire est 4,64:1, aucun sous 4,5:1.
+
 ## Grille d'onde (fond de site)
 
 `src/components/ui/wave-grid-background.tsx`, montée une seule fois dans

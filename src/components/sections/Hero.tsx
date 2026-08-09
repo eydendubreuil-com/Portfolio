@@ -4,10 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { hero } from "@/content/site.config";
 import { liveProjects } from "@/content/projects";
 import { ButtonPrimary, ButtonSecondary } from "@/components/ui/Button";
-import { Starfield } from "@/components/visual/Starfield";
 import { Constellation } from "@/components/visual/Constellation";
-import { TwistingRibbon } from "@/components/ui/twisting-ribbon";
-import { AnimatedRays } from "@/components/ui/animated-rays";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -29,49 +26,13 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[92svh] items-center overflow-hidden pt-[var(--nav-height)]"
     >
-      {/* Ruban de fond, en haut. Volontairement flouté et peu opaque : le hero
-          porte déjà la constellation, et deux pièces spectaculaires qui se
-          disputent l'attention se lisent comme du bruit. Ici c'est une texture,
-          pas un sujet. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[46vh] min-h-[320px] max-h-[460px]"
-      >
-        <TwistingRibbon
-          segments={400}
-          waveSpeed={0.018}
-          waveAmplitude={1}
-          twistCycles={6}
-          opacity={0.4}
-          className="block h-full w-full blur-[2px]"
-        />
-        {/* Fondu vers le fond : sans lui, le bandeau se coupe net. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-bg/70 via-transparent to-bg" />
+      {/* Un seul effet ici, et c'est la constellation.
+          Le ruban est parti au Parcours, les rayons au Positionnement, les
+          étoiles à la Vision : chaque section porte sa pièce, aucune n'en
+          porte quatre. La grille d'onde, elle, traverse tout le site — c'est
+          le seul effet qui a vocation à être partout.
 
-        {/* Voile côté texte. Mesuré : sans lui l'eyebrow tombe à 4,05:1 sur les
-            lobes clairs du ruban, sous le seuil AA. Le ruban reste entier à
-            droite, là où il n'y a rien à lire. */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, var(--color-bg) 0%, var(--color-bg) 30%," +
-              "color-mix(in srgb, var(--color-bg) 55%, transparent) 52%, transparent 72%)",
-          }}
-        />
-      </div>
-
-      {/* Les rayons passent au-dessus du bandeau du ruban, pas dessous.
-          Le voile de ce bandeau se termine en fond opaque à sa hauteur exacte :
-          placés dessous, les rayons s'y coupaient net sur toute la moitié
-          droite. Au-dessus, seul leur propre masque radial les adoucit. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <AnimatedRays />
-      </div>
-
-      <Starfield />
-
-      {/* La constellation occupe la moitié droite en desktop ; masquée en
+          La constellation occupe la moitié droite en desktop ; masquée en
           dessous de lg, où le texte prend toute la largeur. */}
       <div className="absolute inset-y-0 right-0 hidden w-1/2 lg:block">
         <Constellation />
