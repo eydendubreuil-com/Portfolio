@@ -19,7 +19,7 @@ const ContactForm = dynamic(() => import("./ContactForm"), {
 
 export function Contact() {
   return (
-    <section id="contact" className="section">
+    <section id="contact" className="section bg-veil">
       <div className="container-site">
         <Reveal>
           {/* Seul emplacement de la bordure lumineuse sur tout le site : c'est le

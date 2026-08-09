@@ -136,7 +136,7 @@ export function Projects() {
   const shown = filter === "Tous" ? projects : projects.filter((p) => p.category === filter);
 
   return (
-    <section id="projets" className="section">
+    <section id="projets" className="section bg-veil">
       <div className="container-site">
         <SectionHeader eyebrow="Projets" title="Sept projets, quatre déjà en ligne.">
           Chaque projet fait progresser le suivant. Les statuts sont réels : ce qui est en

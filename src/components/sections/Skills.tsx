@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/ui/Eyebrow";
 /** Listes en mono, sans barres ni pourcentages : un niveau chiffré ne veut rien dire. */
 export function Skills() {
   return (
-    <section id="competences" className="section">
+    <section id="competences" className="section bg-veil">
       <div className="container-site">
         <SectionHeader eyebrow="Compétences" title="Ce que je sais faire, concrètement." />
 

@@ -72,7 +72,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             sections. En négatif, il passe sous le contenu tout en restant
             au-dessus du fond de page. */}
         <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-          <WaveGridBackground opacity={0.55} />
+          {/* Opacité remontée depuis 0,55 : l'effet n'est plus étalé partout,
+              il est concentré dans le halo du curseur. Au même réglage qu'avant
+              il aurait été deux fois moins lisible là où il compte. */}
+          <WaveGridBackground opacity={0.9} />
         </div>
 
         <a

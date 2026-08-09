@@ -304,8 +304,21 @@ Vérifié après répartition, quinze relevés : le pire est 4,64:1, aucun sous 
 
 `src/components/ui/wave-grid-background.tsx`, montée une seule fois dans
 `layout.tsx`. Une grille régulière dont chaque sommet est déplacé par la somme de
-trois ondes lentes, plus un renflement gaussien centré sur le curseur. La couleur
-d'un segment interpole entre `--wave-base` (repos) et `--wave-high` (crête et halo).
+trois ondes lentes, plus un renflement gaussien centré sur le curseur.
+
+**C'est le curseur qui allume la grille.** Au repos elle n'est qu'un frémissement
+(10 % d'intensité) ; dans le halo de la souris elle monte à pleine valeur. Mesuré :
+**×50 d'encre** entre une zone loin du curseur et la même zone sous le curseur.
+
+Deux rayons distincts, et c'est volontaire : `REACH` (260 px) déforme la géométrie,
+`GLOW` (420 px) révèle. La bosse doit rester localisée là où la lumière doit
+éclairer une zone confortable. La rampe d'opacité est en puissance 1,5, pas
+linéaire — c'est elle qui fait « apparaître » la grille au lieu de la faire monter
+doucement partout.
+
+Sans pointeur fin (tactile) ou en mouvement réduit, il n'y a pas de curseur pour
+révéler quoi que ce soit : la grille reprend une présence uniforme à 55 % plutôt
+que de laisser la page nue.
 
 **Le code du composant n'était pas fourni** — seule la démo d'appel l'était.
 L'implémentation est donc écrite ici, contre le contrat visible dans cette démo
@@ -340,7 +353,20 @@ Trois contraintes découlent du « sur l'intégralité du site » :
 Une grille de 1 400 sommets, c'est ~2 800 segments. Un `stroke()` par segment
 mettait la page à genoux. Les segments sont donc rangés dans dix paliers de couleur
 et tracés en dix `Path2D`, soit **10 appels de tracé par image** au lieu de 2 800.
-`devicePixelRatio` est plafonné à 1,5. Mesuré : **58 images/s**.
+`devicePixelRatio` est plafonné à 1,5. Les trois `Float32Array` de sommets sont
+alloués au redimensionnement et non dans la boucle — soixante allocations par
+seconde, c'était de la pression sur le ramasse-miettes pour rien.
+
+Mesuré ici : **60 images/s** halo éteint, **37** halo allumé. Le temps passé dans
+`stroke()` est négligeable (1 à 2 ms par seconde) : le coût est dans le remplissage
+des pixels semi-transparents, pas dans le JavaScript. Alléger les traits (cellule
+plus large, opacité et épaisseur réduites) n'a rien changé à la cadence et a coûté
+un tiers de l'intensité — l'essai a été annulé.
+
+**Réserve sur ces chiffres :** la mesure tourne dans un Chromium sans accélération
+matérielle (rendu logiciel, `devicePixelRatio` à 1). Sur une machine avec GPU, le
+remplissage est composité autrement ; ces valeurs sont un plancher, pas une
+prévision.
 
 La boucle s'arrête quand l'onglet passe en arrière-plan (`visibilitychange`) — un
 fond animé qui continue de tourner dans un onglet caché, c'est de la batterie
@@ -353,8 +379,21 @@ composité, grille comprise — et retenir le pixel **le plus clair**, pas une m
 Une moyenne noierait justement le cas qui pose problème : une crête passant sous une
 lettre.
 
-Quinze relevés sur toutes les sections traversées. Le pire est
-**5,79:1** (eyebrow de « Compétences »), le meilleur 15,62:1. Aucun sous 4,5:1.
+Le cas à tester n'est plus « du texte au-dessus de la grille » mais **du texte
+avec le curseur posé dessus**, halo allumé en dessous. C'est la conséquence directe
+de la révélation, et c'est là que ça casse : sans voile, une crête atteint presque
+`--wave-high` et fait tomber un eyebrow (`--color-ink-faint`, le texte le plus pâle
+du site) à **1,58:1**. Illisible.
+
+D'où `.bg-veil` sur toutes les sections qui n'en avaient pas, en plus de
+`.surface-veil`. **Aucune section ne laisse passer la grille à pleine intensité.**
+Le pourcentage est tout le compromis : à 86 % le texte tenait largement mais la
+grille ne se voyait plus, ce qui vidait l'effet de son sens. À 75 % (et 78 % pour
+les surfaces) la grille reste franchement lisible sous le curseur et le pire relevé
+est **4,84:1**, curseur posé sur le texte. En dessous, l'eyebrow perd sa conformité.
+
+Douze relevés curseur sur le texte : pire 4,84:1. Quinze relevés curseur au loin :
+pire 5,99:1. Aucun sous 4,5:1 dans les deux cas.
 
 À noter : une première série de mesures annonçait des échecs partout. Elles étaient
 fausses — la méthode devinait les pixels du texte au lieu de les lire, et tombait sur

@@ -5,7 +5,7 @@ import TextAnimation from "@/components/ui/staggerText";
 /** Bandeau de repères : ouvre le bloc « à propos » sans empiéter sur les 3 sections. */
 export function Intro() {
   return (
-    <section id="a-propos" className="border-y border-[var(--line)] py-14">
+    <section id="a-propos" className="bg-veil border-y border-[var(--line)] py-14">
       <div className="container-site">
         <Reveal>
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

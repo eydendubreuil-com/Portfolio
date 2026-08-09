@@ -128,12 +128,46 @@ export function WaveGridBackground({
         }
         window.addEventListener("resize", resize);
 
-        // Rayon d'influence du curseur, en pixels.
+        // Rayon de déformation du curseur, en pixels : le renflement géométrique.
         const REACH = 260;
         const REACH2 = REACH * REACH;
 
+        // Rayon de RÉVÉLATION, plus large que la déformation : c'est lui qui
+        // allume la grille. Volontairement dissocié — la bosse doit rester
+        // localisée là où le halo, lui, doit éclairer une zone confortable.
+        const GLOW = 420;
+        const GLOW2 = GLOW * GLOW;
+
+        // Présence de la grille loin du curseur. À 0 elle disparaîtrait
+        // complètement entre deux mouvements, ce qui donne une page morte dès
+        // que la souris s'arrête ; à 0,10 il reste un frémissement.
+        const REPOS = 0.1;
+
+        // Sans pointeur fin (tactile) ou en mouvement réduit, il n'y a pas de
+        // curseur pour révéler quoi que ce soit. La grille reprend alors une
+        // présence uniforme plutôt que de laisser la page nue.
+        const revelationUniforme = !finePointer || reduced ? 0.55 : 0;
+
         // Tampons de chemins, un par palier : réalloués une fois, pas par image.
         const paths: Path2D[] = [];
+
+        // Positions et niveaux des sommets. Alloués au redimensionnement, jamais
+        // dans la boucle : trois Float32Array de ~1 400 flottants créés soixante
+        // fois par seconde, c'est de la pression sur le ramasse-miettes pour
+        // rien, et ça se payait en saccades.
+        let hx = new Float32Array(0);
+        let hy = new Float32Array(0);
+        let lvl = new Float32Array(0);
+
+        const allouer = () => {
+            const n = cols * rows;
+            if (hx.length !== n) {
+                hx = new Float32Array(n);
+                hy = new Float32Array(n);
+                lvl = new Float32Array(n);
+            }
+        };
+        allouer();
 
         const draw = (t: number) => {
             ctx.clearRect(0, 0, w, h);
@@ -144,12 +178,9 @@ export function WaveGridBackground({
 
             const time = t * 0.00042;
 
-            // Élévation d'un sommet, en -1..1 environ, puis intensité 0..1.
             const cellsX = cols;
             const cellsY = rows;
-            const hx = new Float32Array(cellsX * cellsY);
-            const hy = new Float32Array(cellsX * cellsY);
-            const lvl = new Float32Array(cellsX * cellsY);
+            allouer();
 
             for (let j = 0; j < cellsY; j++) {
                 for (let i = 0; i < cellsX; i++) {
@@ -179,8 +210,17 @@ export function WaveGridBackground({
                     hx[idx] = px + Math.sin(v * 2.1 + time * 0.9) * amp * 0.45 + dx * bump * -0.16;
                     hy[idx] = py + elev * amp + dy * bump * -0.16;
 
-                    // Intensité : 0 au repos, 1 sur les crêtes et sous le curseur.
-                    lvl[idx] = Math.min(1, Math.max(0, elev * 0.42 + 0.34 + bump * 0.75));
+                    // Révélation : c'est le curseur qui allume la grille.
+                    // Loin de lui elle retombe à REPOS, quasi invisible.
+                    const halo = d2 < GLOW2 ? Math.exp(-d2 / (2 * (GLOW / 2.4) ** 2)) * pull : 0;
+                    const revelation =
+                        revelationUniforme || REPOS + (1 - REPOS) * halo;
+
+                    // Le niveau porte à la fois la crête (couleur) et la
+                    // révélation (présence) : un seul nombre, donc un seul
+                    // classement en paliers, donc toujours dix tracés par image.
+                    const crete = Math.min(1, Math.max(0, elev * 0.42 + 0.34 + bump * 0.75));
+                    lvl[idx] = crete * revelation;
                 }
             }
 
@@ -209,10 +249,13 @@ export function WaveGridBackground({
                 const r = Math.round(base[0] + (high[0] - base[0]) * f);
                 const g = Math.round(base[1] + (high[1] - base[1]) * f);
                 const b = Math.round(base[2] + (high[2] - base[2]) * f);
-                // Les paliers bas restent très discrets : c'est ce qui garde la
-                // grille en texture de fond au lieu d'un quadrillage plein.
-                ctx.strokeStyle = `rgba(${r},${g},${b},${(0.1 + f * 0.62).toFixed(3)})`;
-                ctx.lineWidth = 0.6 + f * 0.7;
+                // Rampe volontairement raide (puissance 1,5) et non linéaire :
+                // c'est elle qui fait que la grille « apparaît » sous la souris
+                // au lieu de monter doucement partout. Le palier 0 est à peine
+                // au-dessus du noir, le dernier est franc.
+                const alpha = 0.035 + 0.86 * f ** 1.5;
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
+                ctx.lineWidth = 0.5 + f * 0.8;
                 ctx.stroke(paths[k]);
             }
         };

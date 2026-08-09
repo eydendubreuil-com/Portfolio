@@ -11,7 +11,7 @@ export function Vision() {
   const [first, second, third] = vision.sentences;
 
   return (
-    <section id="vision" className="section relative overflow-hidden">
+    <section id="vision" className="section bg-veil relative overflow-hidden">
       {/* Mesuré : sans ce masque, une étoile tombant sous l'eyebrow le faisait
           descendre à 2,12:1. Les étoiles ne sont pas coupées côté texte, elles
           y sont ramenées à 18 % — assez pour que le ciel reste continu, trop

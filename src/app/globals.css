@@ -242,7 +242,21 @@
      hero. Les cartes et les listes, elles, gardent un fond plein — c'est là
      que se lit le texte dense. */
   .surface-veil {
-    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  }
+
+  /* Même rôle, teinte de fond. Toutes les sections doivent porter un voile,
+     aucune ne doit laisser passer la grille à pleine intensité : mesuré avec le
+     curseur posé sur le texte, une crête atteint presque `--wave-high` et fait
+     tomber un eyebrow à 1,58:1.
+
+     Le pourcentage est tout le compromis. À 86 % le texte tenait largement mais
+     la grille ne se voyait plus, ce qui vidait l'effet de son sens. 75 % est le
+     point trouvé par mesure : la grille reste franchement lisible sous le
+     curseur et l'eyebrow le plus pâle du site (`--color-ink-faint`) garde sa
+     conformité AA. En dessous, il la perd. */
+  .bg-veil {
+    background: color-mix(in srgb, var(--color-bg) 75%, transparent);
   }
 
   /* --------------------------------------------------------------------

@@ -3,7 +3,7 @@ import { site } from "@/content/site.config";
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--line)]">
+    <footer className="bg-veil border-t border-[var(--line)]">
       <div className="container-site grid gap-10 py-16 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p className="font-display text-2xl font-bold tracking-tight">{site.name}</p>
