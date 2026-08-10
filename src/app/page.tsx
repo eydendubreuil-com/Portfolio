@@ -2,6 +2,7 @@ import { Hero } from "@/components/sections/Hero";
 import { Positioning } from "@/components/sections/Positioning";
 import { Intro } from "@/components/sections/Intro";
 import { AboutSection } from "@/components/sections/AboutSection";
+import { FaqTeaser } from "@/components/sections/FaqTeaser";
 import { Timeline } from "@/components/sections/Timeline";
 import { Projects } from "@/components/sections/Projects";
 import { Focus } from "@/components/sections/Focus";
@@ -25,6 +26,8 @@ export default function Home() {
       {aboutSections.map((s, i) => (
         <AboutSection key={s.id} data={s} index={i} surface={i % 2 === 1} />
       ))}
+
+      <FaqTeaser />
 
       <Timeline />
       <Projects />

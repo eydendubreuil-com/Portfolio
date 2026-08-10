@@ -399,6 +399,51 @@ Dans les deux cas la conclusion « c'est cassé » venait du cadrage de la mesur
 Avant de corriger un effet qui ne bouge pas, vérifier qu'il est bien dans le
 viewport et qu'un événement de pointeur a réellement été émis.
 
+## Cerveau 3D du hero
+
+`src/lib/brain-core.js` (géométrie et rendu) + `src/components/visual/Brain3D.tsx`
+(cycle de vie). Nuage de points et connexions courtes, en canvas 2D. Pas de
+librairie 3D : Three.js pour cet objet coûterait plus que tout le reste du site.
+
+**La forme vient d'un profil, pas d'un ellipsoïde.** Le premier essai empilait
+deux ellipsoïdes avec des harmoniques douces : ça donnait une sphère de points
+avec un fil qui pendait. Ce qui rend la forme lisible, c'est le contour — front
+bombé, sommet haut et reculé, occiput qui redescend, plat sous les lobes — plus
+des plis d'amplitude suffisante pour se voir. Cervelet et tronc sont des masses
+distinctes.
+
+**Il oscille (±0,55 rad), il ne tourne pas.** Une révolution complète présente
+le cerveau de face deux fois par tour, où il n'est plus qu'une masse.
+
+**La teinte suit la position dans l'objet (68 %) plus que la profondeur (32 %)**,
+sinon tout l'objet porte la même couleur à chaque image et le dégradé ne se voit
+jamais.
+
+### Le module est en JavaScript pur, et c'est délibéré
+
+Il sert deux consommateurs : le composant React et le générateur d'aperçu, qui
+l'injecte tel quel. Tant qu'il était en TypeScript, l'aperçu devait retirer les
+annotations à la volée — **trois erreurs de syntaxe silencieuses** en ont
+découlé, chacune produisant une page qui s'affiche et où rien ne bouge :
+
+1. `String.replace` avec une chaîne ne traite que la première occurrence :
+   `dansProfil()` était corrigée, `marge()` gardait son annotation.
+2. `(e: PointerEvent)` a survécu à un filtre qui ne visait que `: number`.
+3. Une expression régulière trop large a cassé autre chose encore.
+
+Le module partagé supprime la transformation. Et le générateur **vérifie la
+syntaxe du script produit avant d'écrire le fichier** : mieux vaut un générateur
+qui échoue qu'un aperçu publié muet.
+
+### Le piège du rectangle nul
+
+`aim()` reçoit un angle calculé depuis `getBoundingClientRect()`. Quand l'hôte
+est masqué — `display: none` sous lg, ou page basculée dans l'aperçu — ce
+rectangle fait 0×0 : la division par la largeur donne l'infini, et
+`Math.cos(Infinity)` vaut **NaN**. Toute la projection devient NaN, l'indice de
+palier aussi, et le tracé plante sur un `Path2D` inexistant. Le garde-fou est
+dans `aim()`, une seule fois, plutôt que chez chaque appelant.
+
 ## Grille d'onde (fond de site)
 
 `src/components/ui/wave-grid-background.tsx`, montée une seule fois dans

@@ -261,7 +261,26 @@ export function createBrain(ctx, opts) {
 
   return {
     draw,
-    resize(nw, nh) { w = nw; h = nh; },
-    aim(y, p) { targetYaw = y; targetPitch = p; },
+    resize(nw, nh) {
+      // Une taille nulle n'est pas une erreur (hôte masqué) : on la garde, le
+      // rendu produit simplement une image vide, et rien n'est NaN.
+      w = Number.isFinite(nw) ? nw : 0;
+      h = Number.isFinite(nh) ? nh : 0;
+    },
+    /**
+     * Vise une direction. Les valeurs non finies sont IGNORÉES.
+     *
+     * L'appelant calcule l'angle à partir de `getBoundingClientRect()`. Quand
+     * l'hôte est masqué (`display: none` sous lg, ou page basculée), ce
+     * rectangle fait 0×0 : la division par la largeur donne l'infini, et
+     * `Math.cos(Infinity)` vaut NaN. Toute la projection devient NaN, l'indice
+     * de palier aussi, et le tracé plante sur un `Path2D` inexistant. Le
+     * garde-fou tient ici plutôt que chez chaque appelant.
+     */
+    aim(y, p) {
+      if (!Number.isFinite(y) || !Number.isFinite(p)) return;
+      targetYaw = Math.max(-1.5, Math.min(1.5, y));
+      targetPitch = Math.max(-1, Math.min(1, p));
+    },
   };
 }

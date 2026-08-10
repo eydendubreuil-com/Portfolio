@@ -17,7 +17,7 @@ const { chromium } = pw;
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ORIGIN = "http://localhost:8933";
+const ORIGIN = "http://localhost:8942";
 const ROOT = "/home/user/Portfolio";
 const OUT = "/home/user/Portfolio/preview.html";
 
@@ -123,6 +123,28 @@ await page.evaluate(() => {
 });
 
 const bodyHtml = await page.evaluate(() => document.body.innerHTML);
+
+// L'aperçu est un fichier unique : `/faq` n'y existe pas, et le bouton « Lire
+// la suite » y mènerait à une page blanche. On capture donc aussi la FAQ et on
+// la garde en réserve dans le même document.
+await page.goto(`${ORIGIN}/faq`, { waitUntil: "networkidle" });
+await page.waitForTimeout(1200);
+await page.evaluate(async () => {
+  for (let y = 0; y < document.body.scrollHeight; y += 400) {
+    scrollTo(0, y); await new Promise((r) => setTimeout(r, 120));
+  }
+  scrollTo(0, 0);
+  await new Promise((r) => setTimeout(r, 600));
+  document.querySelectorAll("[style*='opacity']").forEach((el) => {
+    if (el.style.opacity && Number(el.style.opacity) < 1) {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    }
+  });
+  document.querySelectorAll("script").forEach((n) => n.remove());
+});
+const faqHtml = await page.evaluate(() => document.querySelector("main")?.outerHTML ?? "");
+
 await browser.close();
 
 // Cœur du cerveau, injecté TEL QUEL depuis `src/lib/brain-core.js`.
@@ -425,6 +447,43 @@ __CERVEAU__
     if (reduit) brain.draw(0);
   })();
 
+  /* ---------- Bascule vers la FAQ (aperçu en un seul fichier) ---------- */
+  (() => {
+    const reserve = document.getElementById("apercu-faq");
+    const accueil = document.querySelector("body > main");
+    if (!reserve || !accueil) return;
+    const faq = reserve.firstElementChild;
+    if (!faq) return;
+    faq.hidden = true;
+    accueil.parentNode.insertBefore(faq, accueil.nextSibling);
+    reserve.remove();
+
+    const montrer = (versFaq) => {
+      accueil.hidden = versFaq;
+      faq.hidden = !versFaq;
+      scrollTo(0, 0);
+    };
+    document.addEventListener("click", (e) => {
+      const a = e.target?.closest?.("a[href]");
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (href === "/faq" || href.startsWith("/faq#")) {
+        e.preventDefault();
+        montrer(true);
+        const id = href.split("#")[1];
+        if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+        return;
+      }
+      // Depuis la FAQ, tout lien vers l'accueil ramène l'accueil.
+      if (!faq.hidden && (href === "/" || href.startsWith("/#"))) {
+        e.preventDefault();
+        montrer(false);
+        const id = href.split("#")[1];
+        if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+      }
+    });
+  })();
+
   /* ---------- Filtres de projets ---------- */
   (() => {
     const boutons = [...document.querySelectorAll("#projets button")];
@@ -459,6 +518,7 @@ ${css}
 body { background: transparent; color:#f4f6fb; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
 </style>
 ${bodyHtml}
+<div id="apercu-faq" hidden>${faqHtml}</div>
 <script>${script}<\/script>
 `;
 
