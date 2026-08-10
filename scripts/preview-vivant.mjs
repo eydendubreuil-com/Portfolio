@@ -17,7 +17,7 @@ const { chromium } = pw;
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ORIGIN = "http://localhost:8923";
+const ORIGIN = "http://localhost:8933";
 const ROOT = "/home/user/Portfolio";
 const OUT = "/home/user/Portfolio/preview.html";
 
@@ -77,7 +77,9 @@ await page.evaluate(() => {
   document.querySelectorAll("canvas").forEach((c) => {
     const dansGrille = c.closest("[data-grille-vivante]") ||
       (c.parentElement && getComputedStyle(c.parentElement.parentElement || c).zIndex === "-10");
-    if (dansGrille) { c.remove(); return; }
+    // Le cerveau est la pièce du hero : le figer en image, c'est exactement le
+    // reproche fait à l'ancien aperçu. On garde son enveloppe, vidée.
+    if (dansGrille || c.closest("[data-cerveau]")) { c.remove(); return; }
     let url;
     try { url = c.toDataURL("image/png"); } catch { return; }
     const img = document.createElement("img");
@@ -122,6 +124,14 @@ await page.evaluate(() => {
 
 const bodyHtml = await page.evaluate(() => document.body.innerHTML);
 await browser.close();
+
+// Cœur du cerveau, injecté TEL QUEL depuis `src/lib/brain-core.js`.
+// Ce fichier est en JavaScript pur précisément pour ça : la version précédente
+// retirait les annotations TypeScript à la volée par expressions régulières, et
+// a produit trois erreurs de syntaxe successives — chacune donnant une page qui
+// s'affiche et où rien ne bouge. Aucune transformation, aucune dérive possible.
+const brainCorps = readFileSync(join(ROOT, "src/lib/brain-core.js"), "utf8")
+  .replace(/^export function createBrain/m, "function createBrain");
 
 const script = `
 (() => {
@@ -374,6 +384,47 @@ const script = `
     });
   })();
 
+  /* ---------- Cerveau 3D du hero ---------- */
+__CERVEAU__
+  (() => {
+    const host = document.querySelector("[data-cerveau]");
+    if (!host || typeof createBrain !== "function") return;
+    const canvas = document.createElement("canvas");
+    canvas.className = "block h-full w-full";
+    host.appendChild(canvas);
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    const brain = createBrain(ctx, {
+      rampe: [hex(lire("--color-secondary","#6e56cf")), hex(lire("--color-primary","#5b8cff")), hex(lire("--color-accent","#2ed3f6"))],
+      reduced: reduit,
+      finePointer: fin,
+    });
+
+    const dim = () => {
+      const d = Math.min(devicePixelRatio || 1, 1.5);
+      const w = host.clientWidth, h = host.clientHeight;
+      canvas.width = Math.round(w*d); canvas.height = Math.round(h*d);
+      canvas.style.width = w + "px"; canvas.style.height = h + "px";
+      ctx.setTransform(d,0,0,d,0,0);
+      brain.resize(w, h);
+    };
+    dim(); addEventListener("resize", dim);
+
+    if (fin && !reduit) addEventListener("pointermove", (e) => {
+      const r = host.getBoundingClientRect();
+      brain.aim(((e.clientX-r.left)/r.width-.5)*1.1, ((e.clientY-r.top)/r.height-.5)*.7);
+    }, { passive: true });
+
+    let raf = 0, running = false;
+    const loop = (t) => { if (!running) return; brain.draw(t); raf = requestAnimationFrame(loop); };
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !running && !reduit) { running = true; raf = requestAnimationFrame(loop); }
+      else if (!e.isIntersecting && running) { running = false; cancelAnimationFrame(raf); }
+    }, { threshold: 0 }).observe(host);
+    if (reduit) brain.draw(0);
+  })();
+
   /* ---------- Filtres de projets ---------- */
   (() => {
     const boutons = [...document.querySelectorAll("#projets button")];
@@ -411,5 +462,17 @@ ${bodyHtml}
 <script>${script}<\/script>
 `;
 
-writeFileSync(OUT, out);
+const final = out.replace("__CERVEAU__", brainCorps);
+
+// Le script embarqué est vérifié AVANT écriture. Une erreur de syntaxe y est
+// silencieuse à l'exécution — la page s'affiche, rien ne bouge, et c'est
+// exactement le symptôme qu'on cherche à ne plus produire.
+const dedans = final.slice(final.lastIndexOf("<script>") + 8, final.lastIndexOf("<" + "/script>"));
+try {
+  new Function(dedans);
+} catch (e) {
+  throw new Error("Script de l'aperçu invalide : " + e.message);
+}
+
+writeFileSync(OUT, final);
 console.log("écrit :", (out.length / 1024 | 0) + " Ko | images :", Object.keys(imgMap).length);

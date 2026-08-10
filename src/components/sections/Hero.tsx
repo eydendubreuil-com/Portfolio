@@ -5,6 +5,7 @@ import { hero } from "@/content/site.config";
 import { liveProjects } from "@/content/projects";
 import { ButtonPrimary, ButtonSecondary } from "@/components/ui/Button";
 import { Magnetic } from "@/components/ui/Magnetic";
+import { Brain3D } from "@/components/visual/Brain3D";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -25,11 +26,19 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[92svh] items-center overflow-hidden pt-[var(--nav-height)]"
     >
-      {/* Le hero ne porte plus aucune pièce décorative.
-          La constellation occupait la moitié droite ; elle est retirée, et le
-          texte reprend cette largeur. Le ruban est au Parcours, les rayons au
-          Positionnement, les étoiles à la Vision. Seule la grille d'onde passe
-          derrière, comme partout ailleurs sur le site. */}
+      {/* Le cerveau prend la moitié droite, à la place laissée par la
+          constellation. Le ruban est au Parcours, les rayons au Positionnement,
+          les étoiles à la Vision : le hero ne porte que cette pièce-là, plus la
+          grille d'onde qui traverse tout le site.
+
+          Masqué sous lg : un objet en trois dimensions coincé dans 380 px de
+          large ne se lit plus, et le texte a besoin de toute la largeur. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] lg:block"
+      >
+        <Brain3D className="h-full w-full" />
+      </div>
 
       <div
         aria-hidden
@@ -37,7 +46,7 @@ export function Hero() {
       />
 
       <div className="container-site relative z-10 py-24">
-        <div className="lg:max-w-[76%] xl:max-w-[68%]">
+        <div className="lg:max-w-[54%]">
           <motion.p {...step(0.1)} className="eyebrow">
             {hero.eyebrow}
           </motion.p>
