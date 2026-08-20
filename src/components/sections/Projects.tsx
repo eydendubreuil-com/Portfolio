@@ -169,7 +169,7 @@ export function Projects() {
   return (
     <section id="projets" className="section bg-veil">
       <div className="container-site">
-        <SectionHeader eyebrow="Projets" title="Sept projets, quatre déjà en ligne.">
+        <SectionHeader eyebrow="Projets" title="Sept projets, cinq déjà en ligne.">
           Chaque projet fait progresser le suivant. Les statuts sont réels : ce qui est en
           préparation est annoncé comme tel.
         </SectionHeader>

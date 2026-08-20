@@ -324,9 +324,9 @@ export const projectDetails: ProjectDetail[] = [
     slug: "pawvolt",
     name: "PawVolt",
     categories: ["E-commerce"],
-    status: "En préparation",
+    status: "En ligne",
     accent: "#FF7A18",
-    url: "https://pawvolt.eu/",
+    url: "https://www.pawvolt.eu/",
     tagline: "Promenez 2 chiens. Zéro nœud. Zéro chaos.",
     chapters: [
       {
@@ -376,7 +376,7 @@ export const projectDetails: ProjectDetail[] = [
         slug: "resultats",
         title: "Résultats et suite",
         blocks: [
-          { kind: "p", text: "**Statut** : en préparation. Le site est en ligne, la marque est posée, le produit est défini." },
+          { kind: "p", text: "**Statut** : en ligne. La boutique est ouverte, la marque est posée, le produit est défini." },
           { kind: "p", text: "C'est le projet le plus jeune de l'écosystème, et le seul dont le succès se mesurera en ventes plutôt qu'en usages. Il applique directement ce qui a été appris sur EydenDesigns — le premier e-commerce — et ce qui est enseigné dans MindSet & Business Lab en marketing et en funnels." },
         ],
       },

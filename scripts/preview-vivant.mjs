@@ -17,7 +17,9 @@ const { chromium } = pw;
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ORIGIN = "http://localhost:8942";
+// Le serveur de production tourne sur le port qu'on veut : `APERCU_ORIGIN`
+// évite d'éditer ce fichier à chaque fois qu'un port est déjà pris.
+const ORIGIN = process.env.APERCU_ORIGIN || "http://localhost:8942";
 const ROOT = "/home/user/Portfolio";
 const OUT = "/home/user/Portfolio/preview.html";
 
@@ -61,7 +63,7 @@ const fontVars = [...css.matchAll(/\.__variable_[a-z0-9]+\{([^}]*)\}/g)].map((m)
 // pages. On ne garde donc dans le HTML qu'une clé, et le script pose la source
 // au chargement — chaque image n'existe qu'une fois dans le fichier.
 const imgMap = {};
-for (const name of ["synthesia", "ecoleaf", "mindset", "cosmos", "eyden-designs", "auteur-edition"]) {
+for (const name of ["synthesia", "ecoleaf", "mindset", "cosmos", "pawvolt", "eyden-designs", "auteur-edition"]) {
   const p = join(ROOT, "public/projets", `${name}.webp`);
   if (existsSync(p)) imgMap[`/projets/${name}.webp`] = `data:image/webp;base64,${readFileSync(p).toString("base64")}`;
 }

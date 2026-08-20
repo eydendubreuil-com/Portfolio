@@ -8,8 +8,8 @@ import { projects } from "@/content/projects";
  * L'unique pièce spectaculaire du site.
  *
  * Chaque projet ayant une position `node` est un point lumineux à son accent,
- * relié aux autres par des lignes fines. Les 4 projets en ligne sont bien
- * visibles ; PawVolt (« en préparation ») reste discret.
+ * relié aux autres par des lignes fines. Les projets en ligne sont bien
+ * visibles, les autres restent discrets.
  *
  * Survol : le nom apparaît et les lignes du nœud s'illuminent.
  * Clic : défilement doux vers la carte du projet.

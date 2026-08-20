@@ -11,8 +11,8 @@ export const positioning = {
   pillars: [
     {
       label: "Je livre",
-      title: "Quatre projets en ligne, à 15 ans.",
-      body: "Sur sept projets construits, quatre sont accessibles et utilisables aujourd'hui. Le visiteur clique et voit du réel, pas des promesses. À cet âge, ce n'est pas un détail : c'est le point de départ.",
+      title: "Cinq projets en ligne, à 15 ans.",
+      body: "Sur sept projets construits, cinq sont accessibles et utilisables aujourd'hui. Le visiteur clique et voit du réel, pas des promesses. À cet âge, ce n'est pas un détail : c'est le point de départ.",
     },
     {
       label: "L'IA comme levier",

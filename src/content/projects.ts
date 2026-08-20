@@ -88,15 +88,17 @@ export const projects: Project[] = [
     slug: "pawvolt",
     name: "PawVolt",
     category: "E-commerce",
-    status: "building",
+    status: "live",
     description:
       "Marque premium autour d'une laisse double intelligente pour promener deux chiens sans nœuds : « Zéro nœud. Zéro chaos. »",
     goal: "Construire une marque complète, du produit à l'acquisition.",
     tech: ["Shopify", "Branding", "Publicité en ligne", "Funnels"],
-    url: "https://pawvolt.eu/",
-    // Aucun fichier de capture reçu, et pawvolt.eu est injoignable depuis le build.
-    // Déposer l'image dans public/projets/pawvolt.webp puis renseigner ce champ.
-    image: null,
+    // Le domaine apex sert un certificat expiré : depuis l'extérieur,
+    // https://pawvolt.eu échoue avant même d'afficher quoi que ce soit. Le
+    // sous-domaine www répond. On pointe donc là où la boutique s'ouvre
+    // vraiment — un lien mort sur une carte « en ligne » est pire que rien.
+    url: "https://www.pawvolt.eu/",
+    image: "/projets/pawvolt.webp",
     // Pas le slogan « Zéro nœud. Zéro chaos. » : il est déjà dans la description
     // juste en dessous, et le répéter dans la même carte fait doublon.
     tagline: "La laisse double intelligente",

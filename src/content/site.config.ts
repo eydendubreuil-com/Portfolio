@@ -43,7 +43,7 @@ export const site = {
 export const hero = {
   eyebrow: "Entrepreneur • Créateur • Développeur de projets IA",
   title: "Eyden",
-  lead: "Je conçois, développe et lance des produits qui utilisent l'IA et le web pour résoudre de vrais problèmes. Sept projets, quatre déjà en ligne, un même but : construire des choses utiles et durables.",
+  lead: "Je conçois, développe et lance des produits qui utilisent l'IA et le web pour résoudre de vrais problèmes. Sept projets, cinq déjà en ligne, un même but : construire des choses utiles et durables.",
   ctaPrimary: { label: "Découvrir mes projets", href: "#projets" },
   ctaSecondary: { label: "Me contacter", href: "#contact" },
 } as const;

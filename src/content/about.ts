@@ -6,7 +6,7 @@
 
 export const aboutIntro = {
   eyebrow: "À propos",
-  markers: ["15 ans", "France", "7 projets", "4 en ligne", "Autodidacte"],
+  markers: ["15 ans", "France", "7 projets", "5 en ligne", "Autodidacte"],
 } as const;
 
 export interface AboutSection {
