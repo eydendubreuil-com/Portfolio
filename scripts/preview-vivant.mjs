@@ -53,23 +53,35 @@ css = css.replace(/url\(\s*\/_next\/static\/media\/([^)"']+?)\s*\)/g, (m, file) 
 });
 const fontVars = [...css.matchAll(/\.__variable_[a-z0-9]+\{([^}]*)\}/g)].map((m) => m[1]).join(";");
 
-// Images de projets -> data URI
+// Images de projets -> data URI.
+//
+// Elles ne sont PAS collées dans le HTML : la même image apparaît sur la carte
+// de l'accueil, sur l'index et en tête des cinq chapitres du dossier. Recopier
+// le base64 à chaque fois multipliait le poids du fichier par le nombre de
+// pages. On ne garde donc dans le HTML qu'une clé, et le script pose la source
+// au chargement — chaque image n'existe qu'une fois dans le fichier.
 const imgMap = {};
 for (const name of ["synthesia", "ecoleaf", "mindset", "cosmos", "eyden-designs", "auteur-edition"]) {
   const p = join(ROOT, "public/projets", `${name}.webp`);
   if (existsSync(p)) imgMap[`/projets/${name}.webp`] = `data:image/webp;base64,${readFileSync(p).toString("base64")}`;
 }
-await page.evaluate((map) => {
+
+/**
+ * Remplace, dans la page ouverte, les sources d'images par leur clé.
+ * Exécutée dans le navigateur : elle ne doit fermer sur rien du côté Node.
+ */
+const marquerImages = (cles) => {
   document.querySelectorAll("img").forEach((img) => {
-    const m = img.currentSrc || img.src || "";
-    const hit = Object.keys(map).find((k) => decodeURIComponent(m).includes(k));
-    if (hit) {
-      img.removeAttribute("srcset");
-      img.setAttribute("src", map[hit]);
-      img.setAttribute("loading", "eager");
-    }
+    const m = decodeURIComponent(img.currentSrc || img.src || "");
+    const hit = cles.find((k) => m.includes(k));
+    if (!hit) return;
+    img.removeAttribute("srcset");
+    img.removeAttribute("src");
+    img.setAttribute("data-apercu-img", hit);
   });
-}, imgMap);
+};
+
+await page.evaluate(marquerImages, Object.keys(imgMap));
 
 // Le ruban et les étoiles : figés en image. La grille d'onde, elle, est
 // reconstruite en direct — on retire donc son canvas ici.
@@ -124,26 +136,88 @@ await page.evaluate(() => {
 
 const bodyHtml = await page.evaluate(() => document.body.innerHTML);
 
-// L'aperçu est un fichier unique : `/faq` n'y existe pas, et le bouton « Lire
-// la suite » y mènerait à une page blanche. On capture donc aussi la FAQ et on
-// la garde en réserve dans le même document.
-await page.goto(`${ORIGIN}/faq`, { waitUntil: "networkidle" });
-await page.waitForTimeout(1200);
-await page.evaluate(async () => {
-  for (let y = 0; y < document.body.scrollHeight; y += 400) {
-    scrollTo(0, y); await new Promise((r) => setTimeout(r, 120));
-  }
-  scrollTo(0, 0);
-  await new Promise((r) => setTimeout(r, 600));
-  document.querySelectorAll("[style*='opacity']").forEach((el) => {
-    if (el.style.opacity && Number(el.style.opacity) < 1) {
-      el.style.opacity = "1";
-      el.style.transform = "none";
+/**
+ * L'aperçu est un fichier unique : aucune des pages internes n'y existe, et
+ * cliquer une carte de projet ou « Lire la suite » ne fait rien du tout. On
+ * capture donc chaque page du site et on les garde toutes en réserve dans le
+ * même document ; un routeur en fin de fichier les affiche à la demande.
+ *
+ * Seul le `<main>` est repris : la navigation, le pied de page, la grille et le
+ * curseur vivent dans `body` et sont déjà là, communs à toutes les pages.
+ */
+const capturerMain = async (route) => {
+  await page.goto(ORIGIN + route, { waitUntil: "networkidle" });
+  await page.waitForTimeout(700);
+  return page.evaluate(async (cles) => {
+    for (let y = 0; y < document.body.scrollHeight; y += 420) {
+      scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 110));
     }
-  });
-  document.querySelectorAll("script").forEach((n) => n.remove());
-});
-const faqHtml = await page.evaluate(() => document.querySelector("main")?.outerHTML ?? "");
+    scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 600));
+
+    const main = document.querySelector("main");
+    if (!main) return "";
+
+    main.querySelectorAll("img").forEach((img) => {
+      const m = decodeURIComponent(img.currentSrc || img.src || "");
+      const hit = cles.find((k) => m.includes(k));
+      if (!hit) return;
+      img.removeAttribute("srcset");
+      img.removeAttribute("src");
+      img.setAttribute("data-apercu-img", hit);
+    });
+
+    main.querySelectorAll("script").forEach((n) => n.remove());
+    // Même traitement que l'accueil : on amène à l'état final ce que Motion a
+    // laissé en cours, mais on marque, pour que la révélation puisse rejouer
+    // quand la page devient visible.
+    main.querySelectorAll("[style*='opacity']").forEach((el) => {
+      if (el.style.opacity && Number(el.style.opacity) < 1) {
+        el.style.opacity = "1";
+        el.style.transform = "none";
+      }
+    });
+    main.querySelectorAll('div[style*="opacity: 1"][style*="transform: none"]')
+      .forEach((el) => el.setAttribute("data-reveal", ""));
+    // La barre de lecture est repartie de zéro : la capturer à mi-course
+    // figerait une progression qui ne correspond à rien.
+    main.querySelectorAll("[data-barre]").forEach((el) => {
+      el.style.transform = "scaleX(0)";
+    });
+
+    return main.outerHTML;
+  }, Object.keys(imgMap));
+};
+
+// Les routes sont relevées sur le site lui-même plutôt que recopiées ici : un
+// chapitre ajouté au contenu apparaît dans l'aperçu sans toucher à ce script.
+await page.goto(`${ORIGIN}/projets`, { waitUntil: "networkidle" });
+const routesProjets = await page.evaluate(() =>
+  [...new Set([...document.querySelectorAll('main a[href^="/projets/"]')].map((a) => a.getAttribute("href")))],
+);
+
+const alias = {};
+const routes = ["/faq", "/projets"];
+for (const rp of routesProjets) {
+  await page.goto(ORIGIN + rp, { waitUntil: "networkidle" });
+  const chapitres = await page.evaluate(() =>
+    [...document.querySelectorAll('nav[aria-label="Chapitres du dossier"] a[href]')]
+      .map((a) => a.getAttribute("href")),
+  );
+  if (!chapitres.length) throw new Error(`Aucun chapitre trouvé pour ${rp}`);
+  // `/projets/x` redirige vers son premier chapitre : le routeur de l'aperçu
+  // doit faire le même détour, sinon les cartes de l'accueil ne mènent nulle part.
+  alias[rp] = chapitres[0];
+  routes.push(...chapitres);
+}
+
+const pagesHtml = [];
+for (const route of routes) {
+  const html = await capturerMain(route);
+  if (!html) throw new Error(`Page vide : ${route}`);
+  pagesHtml.push(`<div data-apercu-route="${route}">${html}</div>`);
+}
 
 await browser.close();
 
@@ -332,6 +406,9 @@ const script = `
     }
     const cibles = liens.map(a => document.querySelector(a.getAttribute("href")));
     const maj = () => {
+      // Hors de l'accueil, les sections visées sont masquées : leurs positions
+      // valent toutes zéro et l'indicateur désignerait la dernière au hasard.
+      if ((document.documentElement.dataset.apercuRoute || "/") !== "/") return;
       const ligne = scrollY + parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop||"96") + 1;
       let actif = -1;
       cibles.forEach((el,i) => { if (el && el.getBoundingClientRect().top+scrollY <= ligne) actif = i; });
@@ -447,40 +524,97 @@ __CERVEAU__
     if (reduit) brain.draw(0);
   })();
 
-  /* ---------- Bascule vers la FAQ (aperçu en un seul fichier) ---------- */
+  /* ---------- Sources des images ---------- */
   (() => {
-    const reserve = document.getElementById("apercu-faq");
-    const accueil = document.querySelector("body > main");
-    if (!reserve || !accueil) return;
-    const faq = reserve.firstElementChild;
-    if (!faq) return;
-    faq.hidden = true;
-    accueil.parentNode.insertBefore(faq, accueil.nextSibling);
-    reserve.remove();
+    const IMAGES = __IMAGES__;
+    document.querySelectorAll("img[data-apercu-img]").forEach((img) => {
+      const src = IMAGES[img.getAttribute("data-apercu-img")];
+      if (src) { img.src = src; img.loading = "eager"; }
+    });
+  })();
 
-    const montrer = (versFaq) => {
-      accueil.hidden = versFaq;
-      faq.hidden = !versFaq;
-      scrollTo(0, 0);
+  /* ---------- Routeur interne (aperçu en un seul fichier) ---------- */
+  (() => {
+    const accueil = document.querySelector("body > main");
+    if (!accueil) return;
+
+    // Toutes les pages du site sont dans le fichier, repliées. On les sort de
+    // leur réserve pour qu'elles héritent des styles de body comme l'accueil,
+    // et on n'en montre qu'une à la fois.
+    const pages = { "/": accueil };
+    const reserve = document.getElementById("apercu-pages");
+    if (reserve) {
+      [...reserve.children].forEach((bloc) => {
+        bloc.style.display = "none";
+        accueil.parentNode.insertBefore(bloc, accueil.nextSibling);
+        pages[bloc.getAttribute("data-apercu-route")] = bloc;
+      });
+      reserve.remove();
+    }
+
+    // /projets/x -> premier chapitre : le site y répond par une redirection,
+    // qu'un fichier unique ne peut pas faire. Le détour est donc fait ici.
+    const ALIAS = __ALIAS__;
+    let courante = "/";
+    document.documentElement.dataset.apercuRoute = "/";
+
+    const barre = () => {
+      const el = pages[courante].querySelector("[data-barre]");
+      if (!el) return;
+      const total = document.documentElement.scrollHeight - innerHeight;
+      const p = total <= 0 ? 0 : Math.min(1, Math.max(0, scrollY / total));
+      el.style.transform = "scaleX(" + p.toFixed(4) + ")";
     };
+
+    const aller = (route, id) => {
+      if (!pages[route]) return false;
+      pages[courante].style.display = "none";
+      pages[route].style.display = "";
+      courante = route;
+      document.documentElement.dataset.apercuRoute = route;
+      scrollTo(0, 0);
+      if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+      barre();
+      return true;
+    };
+
     document.addEventListener("click", (e) => {
       const a = e.target?.closest?.("a[href]");
       if (!a) return;
-      const href = a.getAttribute("href");
-      if (href === "/faq" || href.startsWith("/faq#")) {
+      const href = a.getAttribute("href") || "";
+
+      // Ancre seule : sur l'accueil le comportement natif suffit ; ailleurs, il
+      // faut d'abord ramener l'accueil, sinon l'ancre vise un élément masqué.
+      if (href.startsWith("#")) {
+        if (courante === "/") return;
         e.preventDefault();
-        montrer(true);
-        const id = href.split("#")[1];
-        if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+        aller("/", href.slice(1).split("?")[0]);
         return;
       }
-      // Depuis la FAQ, tout lien vers l'accueil ramène l'accueil.
-      if (!faq.hidden && (href === "/" || href.startsWith("/#"))) {
-        e.preventDefault();
-        montrer(false);
-        const id = href.split("#")[1];
-        if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
-      }
+      if (!href.startsWith("/")) return; // lien externe : on n'y touche pas
+
+      const coupe = href.split("#");
+      const route = ALIAS[coupe[0]] || coupe[0].replace(/(.)\\/$/, "$1");
+      // Le formulaire de contact reçoit le projet en paramètre (#contact?projet=x).
+      const id = coupe[1] ? coupe[1].split("?")[0] : "";
+      if (pages[route]) { e.preventDefault(); aller(route, id); }
+    });
+
+    addEventListener("scroll", barre, { passive: true });
+    addEventListener("resize", barre);
+
+    // Flèches ← → : feuilleter un dossier sans viser un onglet à la souris.
+    addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      if (t && t.isContentEditable) return;
+      const nav = pages[courante].querySelector("nav[aria-label='Chapitres du dossier']");
+      if (!nav) return;
+      const liens = [...nav.querySelectorAll("a[href]")];
+      const i = liens.findIndex((a) => a.getAttribute("aria-current") === "page");
+      const cible = liens[(i < 0 ? 0 : i) + (e.key === "ArrowLeft" ? -1 : 1)];
+      if (cible) { e.preventDefault(); aller(cible.getAttribute("href"), ""); }
     });
   })();
 
@@ -518,11 +652,14 @@ ${css}
 body { background: transparent; color:#f4f6fb; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
 </style>
 ${bodyHtml}
-<div id="apercu-faq" hidden>${faqHtml}</div>
+<div id="apercu-pages" hidden>${pagesHtml.join("")}</div>
 <script>${script}<\/script>
 `;
 
-const final = out.replace("__CERVEAU__", brainCorps);
+const final = out
+  .replace("__CERVEAU__", brainCorps)
+  .replace("__IMAGES__", JSON.stringify(imgMap))
+  .replace("__ALIAS__", JSON.stringify(alias));
 
 // Le script embarqué est vérifié AVANT écriture. Une erreur de syntaxe y est
 // silencieuse à l'exécution — la page s'affiche, rien ne bouge, et c'est
@@ -535,4 +672,8 @@ try {
 }
 
 writeFileSync(OUT, final);
-console.log("écrit :", (out.length / 1024 | 0) + " Ko | images :", Object.keys(imgMap).length);
+console.log(
+  "écrit :", (final.length / 1024 / 1024).toFixed(2) + " Mo",
+  "| images :", Object.keys(imgMap).length,
+  "| pages :", routes.length + 1,
+);

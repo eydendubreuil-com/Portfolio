@@ -551,6 +551,39 @@ des traits de la grille. Corrigée avant toute conclusion.
   appui et resterait figé là.
 - `aria-hidden` et `pointer-events: none` sur la couche entière.
 
+## L'aperçu en un seul fichier — `scripts/preview-vivant.mjs`
+
+Un artifact ne peut pas exécuter de serveur : il n'y a **aucune route**. Les
+liens internes du site — les cartes de projet, « Lire la suite », les onglets de
+chapitres — pointent vers des URL qui n'existent pas dans le fichier, et le clic
+ne fait strictement rien. Ce n'est pas visible à l'inspection du HTML : les
+liens sont bien là, avec le bon `href`.
+
+Le générateur capture donc **toutes les pages** (accueil, FAQ, index, 35
+chapitres), les replie dans le même document, et un routeur en fin de fichier en
+affiche une à la fois.
+
+- **Les routes sont relevées sur le site, jamais recopiées ici.** L'index donne
+  les projets, chaque `ChapterNav` donne ses chapitres. Un chapitre ajouté au
+  contenu entre dans l'aperçu sans qu'on touche au script.
+- **Seul le `<main>` est repris.** Navigation, pied de page, grille d'onde et
+  curseur vivent dans `body` : ils sont déjà là et servent toutes les pages.
+- **`/projets/x` redirige côté serveur vers son premier chapitre.** Un fichier
+  unique ne redirige rien : la table `ALIAS` refait ce détour, sinon les cartes
+  de l'accueil mènent à une route absente.
+- **Les images ne sont pas collées dans le HTML.** La même capture apparaît sur
+  la carte, sur l'index et en tête des cinq chapitres. Recopier le base64 à
+  chaque fois multipliait le poids par le nombre de pages ; le HTML ne garde
+  qu'une clé (`data-apercu-img`) et le script pose la source au chargement.
+  Résultat : 38 pages pour 1,38 Mo, contre 1,12 Mo pour l'accueil seul.
+- **Hors accueil, l'indicateur de section se tait.** Les sections visées sont
+  masquées, leurs positions valent toutes zéro, et il désignerait la dernière au
+  hasard.
+
+`data-barre` sur la barre de lecture et `nav[aria-label="Chapitres du dossier"]`
+sont les deux points d'accroche du routeur. Les viser par leurs classes
+utilitaires, c'était les lier à une mise en forme qui peut changer sans prévenir.
+
 ## Accessibilité
 
 `prefers-reduced-motion: reduce` est traité globalement dans `globals.css` : animations et

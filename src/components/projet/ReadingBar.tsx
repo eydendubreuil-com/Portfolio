@@ -7,6 +7,10 @@ import { useEffect, useRef } from "react";
  *
  * Pilotée par `scaleX` et non par `width` : une largeur animée déclenche une
  * mise en page à chaque image, une transformation reste sur le compositeur.
+ *
+ * `data-barre` est le point d'accroche de l'aperçu en un seul fichier, qui
+ * repilote la barre sans React. Le viser par ses classes utilitaires serait le
+ * lier à une mise en forme qui peut changer sans prévenir.
  */
 export function ReadingBar({ accent }: { accent: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,6 +42,7 @@ export function ReadingBar({ accent }: { accent: string }) {
     >
       <div
         ref={ref}
+        data-barre
         className="h-full origin-left"
         style={{ background: accent, transform: "scaleX(0)", willChange: "transform" }}
       />
