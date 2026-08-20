@@ -456,7 +456,7 @@ export const projectDetails: ProjectDetail[] = [
     categories: ["Édition numérique"],
     status: "En cours",
     accent: "#D9A55B",
-    url: null,
+    url: "https://mindsetbusinesslab.store/ebooks",
     tagline: "15 e-books, 2 packs. Écrits pour agir.",
     chapters: [
       {

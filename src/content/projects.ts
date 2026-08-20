@@ -127,7 +127,10 @@ export const projects: Project[] = [
       "Bibliothèque de contenus éducatifs orientés action : un ouvrage principal (~350 pages) et une série de titres sur le business, le marketing et l'IA.",
     goal: "Donner à l'écosystème sa profondeur éducative.",
     tech: ["Édition numérique", "Création de contenu"],
-    url: null,
+    // La bibliothèque n'a pas de site à elle : elle vit dans MindSet & Business
+    // Lab, qui la vend. Le lien mène donc à son rayon. Laisser `null` affichait
+    // « Ce projet n'est pas encore public » alors que les 15 titres le sont.
+    url: "https://mindsetbusinesslab.store/ebooks",
     image: "/projets/auteur-edition.webp",
     accent: "#D9A55B",
   },
