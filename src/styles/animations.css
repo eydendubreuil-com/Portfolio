@@ -1,0 +1,165 @@
+/* Keyframes. Tout est neutralisé par le bloc prefers-reduced-motion de globals.css. */
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-6%, -3%, 0) rotate(0);
+  }
+  50% {
+    transform: translate3d(6%, 4%, 0) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(-6%, -3%, 0) rotate(0);
+  }
+}
+
+@keyframes node-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes line-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--line-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: var(--star-o, 0.4);
+  }
+  50% {
+    opacity: calc(var(--star-o, 0.4) * 0.35);
+  }
+}
+
+.anim-breathe {
+  animation: node-breathe 7s var(--ease-in-out) infinite;
+}
+
+.anim-float {
+  animation: float-soft 6s var(--ease-in-out) infinite;
+}
+
+.anim-line-flow {
+  background-size: 200% 100%;
+  animation: line-flow 6s linear infinite;
+}
+
+.anim-aurora {
+  animation: aurora-drift 28s var(--ease-in-out) infinite;
+}
+
+.anim-twinkle {
+  animation: star-twinkle 6s var(--ease-in-out) infinite;
+}
+
+.anim-draw {
+  stroke-dasharray: var(--line-length, 1000);
+  animation: draw-line 1.2s var(--ease-out) forwards;
+}
+
+/* ==========================================================================
+   Bordure lumineuse animée (GlowBorderCard)
+
+   `@property` est ce qui rend l'animation possible : sans lui, un angle de
+   conic-gradient déclaré en variable CSS n'est pas interpolable et l'animation
+   saute de 0deg à 360deg au lieu de tourner. Doit rester au premier niveau,
+   jamais dans un @layer.
+   ========================================================================== */
+
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Décalage piloté par la souris, ajouté à l'angle animé : la lueur se lit alors
+   comme une source de lumière qui suit le curseur. Hérité, car il est posé sur
+   le wrapper de la carte et consommé par l'élément de couronne. */
+@property --glow-offset {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: true;
+}
+
+.glow-conic {
+  background: conic-gradient(
+    from calc(var(--glow-angle) + var(--glow-offset, 0deg)),
+    var(--glow-color-1),
+    var(--glow-color-2),
+    var(--glow-color-3),
+    var(--glow-color-4),
+    var(--glow-color-5),
+    var(--glow-color-6),
+    var(--glow-color-7),
+    var(--glow-color-8),
+    var(--glow-color-9),
+    var(--glow-color-10),
+    var(--glow-color-1)
+  );
+  animation: glow-spin var(--glow-animation-duration, 4s) linear infinite;
+}
+
+@keyframes glow-spin {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+
+/* Sans mouvement : le dégradé reste, figé sur un angle choisi. La lueur ne
+   disparaît pas, elle cesse simplement de tourner. */
+@media (prefers-reduced-motion: reduce) {
+  .glow-conic {
+    animation: none;
+    --glow-angle: 120deg;
+  }
+}
+
+/* ==========================================================================
+   AnimatedRays — le composant applique la classe `animate-aurora-bg` à sa
+   couche superposée mais ne fournit pas l'animation. C'est le défilement de
+   `background-position` qui fait dériver les rayons.
+   ========================================================================== */
+
+@keyframes aurora-bg {
+  from {
+    background-position: 50% 50%, 50% 50%;
+  }
+  to {
+    background-position: 350% 50%, 350% 50%;
+  }
+}
+
+.animate-aurora-bg {
+  animation: aurora-bg 60s linear infinite;
+}
