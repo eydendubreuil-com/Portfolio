@@ -25,6 +25,11 @@ export function Footer() {
             {/* Seule page distincte du site : elle n'est pas dans `site.nav`,
                 qui ne contient que des ancres de l'accueil. */}
             <li>
+              <a href="/projets" className="text-sm text-ink-muted transition-colors hover:text-ink">
+                Tous les dossiers projet
+              </a>
+            </li>
+            <li>
               <a href="/faq" className="text-sm text-ink-muted transition-colors hover:text-ink">
                 Questions fréquentes
               </a>

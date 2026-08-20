@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { categories, projects, type Project, type ProjectCategory } from "@/content/projects";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SectionHeader } from "@/components/ui/Eyebrow";
@@ -23,7 +23,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       // l'action au survol de la carte. Uniquement sur les cartes — pas sur les
       // champs de formulaire ni le texte courant, où masquer le curseur natif
       // rendrait le site inutilisable.
-      data-curseur={project.url ? "Voir" : "Bientôt"}
+      data-curseur="Lire le dossier"
       className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)]
                  border border-[var(--line)] bg-card scroll-mt-32
                  transition-colors duration-200 hover:border-[var(--line-strong)]
@@ -115,21 +115,47 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         </ul>
 
         {/* mt-auto colle le pied de carte en bas : toutes les cartes s'alignent */}
-        <div className="mt-auto flex items-center justify-between gap-4 border-t border-[var(--line)] pt-5">
+        {/* Deux sorties distinctes, jamais confondues : lire le dossier reste
+            sur le site, voir le site quitte le site. Les fondre en un seul lien
+            forcerait le visiteur à choisir sans savoir ce qu'il déclenche. */}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3
+                        border-t border-[var(--line)] pt-5">
           <StatusBadge status={project.status} />
-          {project.url ? (
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noreferrer noopener"
+          <div className="flex items-center gap-5">
+            {project.url ? (
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="relative z-10 inline-flex items-center gap-1.5 text-sm text-ink-muted
+                           transition-colors hover:text-ink"
+              >
+                Voir le site
+                <ArrowUpRight size={15} strokeWidth={1.75} />
+              </a>
+            ) : null}
+            <span
               className="inline-flex items-center gap-1.5 text-sm font-medium text-ink
-                         transition-colors hover:text-primary"
+                         transition-colors group-hover:text-primary"
             >
-              Voir le projet
-              <ArrowUpRight size={16} strokeWidth={1.75} />
-            </a>
-          ) : null}
+              Lire le dossier
+              <ArrowRight
+                size={16}
+                strokeWidth={1.75}
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              />
+            </span>
+          </div>
         </div>
+
+        {/* Recouvrement cliquable : la carte entière ouvre le dossier, sans
+            imbriquer le lien externe dans un autre lien — ce qui serait du HTML
+            invalide et casserait le clic droit sur les deux. */}
+        <a
+          href={`/projets/${project.slug}`}
+          aria-label={`Lire le dossier ${project.name}`}
+          className="absolute inset-0 z-0"
+        />
       </div>
     </motion.article>
   );
