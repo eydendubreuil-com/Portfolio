@@ -14,7 +14,7 @@
  */
 import pw from "/opt/node22/lib/node_modules/playwright/index.js";
 const { chromium } = pw;
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 // Le serveur de production tourne sur le port qu'on veut : `APERCU_ORIGIN`
@@ -63,10 +63,20 @@ const fontVars = [...css.matchAll(/\.__variable_[a-z0-9]+\{([^}]*)\}/g)].map((m)
 // pages. On ne garde donc dans le HTML qu'une clé, et le script pose la source
 // au chargement — chaque image n'existe qu'une fois dans le fichier.
 const imgMap = {};
-for (const name of ["synthesia", "ecoleaf", "mindset", "cosmos", "pawvolt", "eyden-designs", "auteur-edition"]) {
-  const p = join(ROOT, "public/projets", `${name}.webp`);
-  if (existsSync(p)) imgMap[`/projets/${name}.webp`] = `data:image/webp;base64,${readFileSync(p).toString("base64")}`;
-}
+const ramasser = (dossier) => {
+  const abs = join(ROOT, "public", dossier);
+  if (!existsSync(abs)) return;
+  for (const f of readdirSync(abs)) {
+    if (!f.endsWith(".webp")) continue;
+    imgMap[`/${dossier}/${f}`] =
+      `data:image/webp;base64,${readFileSync(join(abs, f)).toString("base64")}`;
+  }
+};
+// Balayage du dossier plutôt qu'une liste écrite à la main : les 26 écrans des
+// galeries s'y ajoutent sans qu'on y pense, et une capture oubliée dans la
+// liste donnait une image absente de l'aperçu sans aucun message d'erreur.
+ramasser("projets");
+ramasser("projets/ecrans");
 
 /**
  * Remplace, dans la page ouverte, les sources d'images par leur clé.
@@ -137,6 +147,23 @@ await page.evaluate(() => {
 });
 
 const bodyHtml = await page.evaluate(() => document.body.innerHTML);
+
+// Contrôle de prise.
+//
+// Une reconstruction lancée pendant que le serveur tourne lui fait servir, le
+// temps que `.next` soit réécrit, une page d'erreur ou une page vide. L'aperçu
+// se générait alors sans incident apparent : 38 pages annoncées, 3 Mo écrits,
+// et un accueil sans une seule section. On vérifie donc que ce qu'on a
+// photographié ressemble à l'accueil avant d'aller plus loin.
+for (const marqueur of ['id="top"', 'id="projets"', 'id="dependances"', 'id="contact"']) {
+  if (!bodyHtml.includes(marqueur)) {
+    throw new Error(
+      `Accueil incomplet : ${marqueur} absent de la capture. ` +
+      "Le serveur de production sert probablement une version à moitié écrite — " +
+      "relancez-le après la compilation, puis régénérez.",
+    );
+  }
+}
 
 /**
  * L'aperçu est un fichier unique : aucune des pages internes n'y existe, et
@@ -410,7 +437,7 @@ const script = `
     const maj = () => {
       // Hors de l'accueil, les sections visées sont masquées : leurs positions
       // valent toutes zéro et l'indicateur désignerait la dernière au hasard.
-      if ((document.documentElement.dataset.apercuRoute || "/") !== "/") return;
+      if ((document.documentElement.dataset.apercuCourant || "/") !== "/") return;
       const ligne = scrollY + parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop||"96") + 1;
       let actif = -1;
       cibles.forEach((el,i) => { if (el && el.getBoundingClientRect().top+scrollY <= ligne) actif = i; });
@@ -558,7 +585,12 @@ __CERVEAU__
     // qu'un fichier unique ne peut pas faire. Le détour est donc fait ici.
     const ALIAS = __ALIAS__;
     let courante = "/";
-    document.documentElement.dataset.apercuRoute = "/";
+    // Nom distinct de l'attribut des pages en réserve. Avec le même nom, <html>
+    // entrait dans la sélection, et « les boutons de la page affichée » devenait
+    // « tous les boutons du document ».
+    // (Pas d'accent grave dans ce commentaire : il est à l'intérieur d'un
+    //  gabarit de chaîne, un seul le refermerait.)
+    document.documentElement.dataset.apercuCourant = "/";
 
     const barre = () => {
       const el = pages[courante].querySelector("[data-barre]");
@@ -573,7 +605,7 @@ __CERVEAU__
       pages[courante].style.display = "none";
       pages[route].style.display = "";
       courante = route;
-      document.documentElement.dataset.apercuRoute = route;
+      document.documentElement.dataset.apercuCourant = route;
       scrollTo(0, 0);
       if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
       barre();
@@ -618,6 +650,122 @@ __CERVEAU__
       const cible = liens[(i < 0 ? 0 : i) + (e.key === "ArrowLeft" ? -1 : 1)];
       if (cible) { e.preventDefault(); aller(cible.getAttribute("href"), ""); }
     });
+  })();
+
+  /* ---------- Carte des dépendances ---------- */
+  (() => {
+    const liste = document.querySelector("[data-liens]");
+    const hote = document.querySelector("[data-citation-hote]");
+    if (!liste || !hote) return;
+    const boutons = [...liste.querySelectorAll("button[data-citation]")];
+    const aretes = [...document.querySelectorAll("path[data-arete]")];
+    const noeuds = [...document.querySelectorAll("g[data-noeud]")];
+    if (!boutons.length || !aretes.length) return;
+
+    // La note par défaut est le seul contenu rendu par le serveur : on la met
+    // de côté pour pouvoir la remettre quand plus rien n'est survolé.
+    const note = hote.innerHTML;
+    // Les deux extrémités d'une arête se lisent sur l'étiquette du lien, qui
+    // nomme le projet de départ et celui d'arrivée dans cet ordre.
+    const bornes = boutons.map((b) => {
+      const d = b.querySelector("span[style*='background']");
+      return { couleur: d ? getComputedStyle(d).backgroundColor : "currentColor" };
+    });
+
+    const montrer = (i) => {
+      aretes.forEach((a, k) => {
+        a.setAttribute("stroke-width", k === i ? "2.4" : "1.2");
+        a.setAttribute("stroke-opacity", i === null ? "0.3" : k === i ? "0.95" : "0.07");
+      });
+      if (i === null) {
+        noeuds.forEach((g) => { g.setAttribute("opacity", "1"); });
+        hote.innerHTML = note;
+        return;
+      }
+      // Les nœuds allumés sont ceux que l'étiquette du lien nomme.
+      const titre = (boutons[i].querySelector("span span") || {}).textContent || "";
+      noeuds.forEach((g) => {
+        const nom = (g.querySelector("text") || {}).textContent || "";
+        g.setAttribute("opacity", nom && titre.includes(nom) ? "1" : "0.25");
+      });
+      const b = boutons[i];
+      hote.innerHTML =
+        '<figure><blockquote class="measure border-l-2 pl-5 text-ink-muted" style="border-color:'
+        + bornes[i].couleur + '">' + b.getAttribute("data-citation")
+        + '</blockquote><figcaption class="mt-4 pl-5"><a href="'
+        + b.getAttribute("data-source-href")
+        + '" class="inline-flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-ink-faint transition-colors hover:text-ink">'
+        + b.getAttribute("data-source") + " →</a></figcaption></figure>";
+    };
+
+    boutons.forEach((b, i) => {
+      b.addEventListener("pointerenter", () => montrer(i));
+      b.addEventListener("focus", () => montrer(i));
+      b.addEventListener("pointerleave", () => montrer(null));
+      b.addEventListener("blur", () => montrer(null));
+    });
+  })();
+
+  /* ---------- Agrandissement des écrans ---------- */
+  (() => {
+    const vignettes = [...document.querySelectorAll('button[data-curseur="Agrandir"]')];
+    if (!vignettes.length) return;
+
+    const fond = document.createElement("div");
+    fond.setAttribute("role", "dialog");
+    fond.setAttribute("aria-modal", "true");
+    fond.style.cssText = "position:fixed;inset:0;z-index:80;display:none;place-items:center;"
+      + "padding:2rem;background:rgba(0,0,0,.85);backdrop-filter:blur(4px)";
+    const cadre = document.createElement("figure");
+    cadre.style.cssText = "width:100%;max-width:1200px;margin:0";
+    const img = document.createElement("img");
+    img.style.cssText = "width:100%;aspect-ratio:16/9;object-fit:contain;border-radius:16px;"
+      + "border:1px solid rgba(255,255,255,.1);display:block";
+    const legende = document.createElement("figcaption");
+    legende.style.cssText = "margin-top:1rem;font-family:var(--font-jetbrains),monospace;"
+      + "font-size:.8rem;color:rgba(255,255,255,.7);display:flex;justify-content:space-between;gap:1rem";
+    cadre.append(img, legende);
+    fond.appendChild(cadre);
+    document.body.appendChild(fond);
+
+    // Les vignettes de TOUS les dossiers sont dans le fichier ; seules celles du
+    // dossier affiché comptent, sinon une flèche sauterait d'un projet à l'autre.
+    let serie = [], rang = 0, ouvert = false, origine = null;
+
+    const poser = () => {
+      const v = serie[rang];
+      const src = v.querySelector("img");
+      img.src = src ? src.currentSrc || src.src : "";
+      img.alt = src ? src.alt : "";
+      legende.textContent = (v.querySelector("span:last-child") || {}).textContent || "";
+    };
+    const ouvrir = (v) => {
+      const galerie = v.closest("ul");
+      serie = [...galerie.querySelectorAll('button[data-curseur="Agrandir"]')];
+      rang = serie.indexOf(v);
+      origine = v; ouvert = true;
+      fond.style.display = "grid";
+      document.body.style.overflow = "hidden";
+      poser();
+    };
+    const fermer = () => {
+      ouvert = false;
+      fond.style.display = "none";
+      document.body.style.overflow = "";
+      if (origine) origine.focus();
+    };
+
+    vignettes.forEach((v) => v.addEventListener("click", (e) => { e.preventDefault(); ouvrir(v); }));
+    fond.addEventListener("click", (e) => { if (e.target === fond) fermer(); });
+    addEventListener("keydown", (e) => {
+      if (!ouvert) return;
+      if (e.key === "Escape") { fermer(); return; }
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      e.stopPropagation();
+      rang = (rang + (e.key === "ArrowRight" ? 1 : -1) + serie.length) % serie.length;
+      poser();
+    }, true);
   })();
 
   /* ---------- Filtres de projets ---------- */

@@ -7,6 +7,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { ChapterNav } from "@/components/projet/ChapterNav";
 import { ReadingBar } from "@/components/projet/ReadingBar";
+import { ScreenGallery } from "@/components/projet/ScreenGallery";
+import { ecrans } from "@/content/screens";
 
 /**
  * Coquille d'un dossier projet.
@@ -119,7 +121,16 @@ export default async function ProjectLayout({
 
       <ChapterNav projet={projet} />
 
-      <div className="container-site pb-24">{children}</div>
+      <div className="container-site pb-24">
+        {children}
+        {/* La galerie appartient au dossier, pas au chapitre : elle reste
+            identique d'un onglet à l'autre, comme l'en-tête et les sorties. */}
+        <ScreenGallery
+          ecrans={ecrans[slug] ?? []}
+          accent={projet.accent}
+          nom={projet.name}
+        />
+      </div>
 
       {/* Les deux sorties, en bas de chaque chapitre. Un client veut essayer,
           un collaborateur veut parler : leur proposer la même chose, c'est

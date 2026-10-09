@@ -5,6 +5,7 @@ import { AboutSection } from "@/components/sections/AboutSection";
 import { FaqTeaser } from "@/components/sections/FaqTeaser";
 import { Timeline } from "@/components/sections/Timeline";
 import { Projects } from "@/components/sections/Projects";
+import { Ecosystem } from "@/components/sections/Ecosystem";
 import { Focus } from "@/components/sections/Focus";
 import { Skills } from "@/components/sections/Skills";
 import { Stats } from "@/components/sections/Stats";
@@ -13,7 +14,7 @@ import { Contact } from "@/components/sections/Contact";
 import { aboutSections } from "@/content/about";
 
 /**
- * Douze sections. Les fonds alternent bg / surface pour que la séparation se
+ * Treize sections. Les fonds alternent bg / surface pour que la séparation se
  * voie sans ajouter de traits ni d'ombres.
  */
 export default function Home() {
@@ -31,6 +32,10 @@ export default function Home() {
 
       <Timeline />
       <Projects />
+      {/* Juste après les sept cartes : on vient de voir les projets un par un,
+          c'est le moment où « chaque projet fait progresser le suivant » peut
+          être démontré au lieu d'être répété. */}
+      <Ecosystem />
       <Focus />
       <Skills />
       <Stats />

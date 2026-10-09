@@ -81,6 +81,19 @@ const refus = await p.evaluate(() => {
   return b.textContent.trim();
 });
 if (refus) { console.log("  bandeau cookies :", refus); await p.waitForTimeout(2000); }
+
+// Badge « Edit with Lovable » : widget de la plateforme d'hébergement,
+// posé par-dessus la page, pas un élément du design d'Eyden. Le laisser
+// dans une capture de portfolio, c'est montrer l'outil au lieu du travail.
+await p.evaluate(() => {
+  document.querySelectorAll('a[href*="lovable.dev"], a[href*="lovable.app/?"], [id*="lovable" i], [class*="lovable" i]')
+    .forEach((e) => e.remove());
+  [...document.querySelectorAll("body > *")].forEach((e) => {
+    const s = getComputedStyle(e);
+    if (s.position === "fixed" && /edit with/i.test(e.textContent || "")) e.remove();
+  });
+});
+
 // Aller-retour : réveille ce qui s'anime à l'entrée en vue, puis on remonte.
 await p.evaluate(() => scrollTo(0, 700));
 await p.waitForTimeout(2500);

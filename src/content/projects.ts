@@ -30,13 +30,17 @@ export interface Project {
 export const projects: Project[] = [
   {
     slug: "synthesia",
-    name: "Synthesia",
+    // Le produit s'appelle « Agent Synthesia B.O.S » depuis sa dernière version :
+    // c'est le nom affiché partout sur le site, dans le titre de la page comme
+    // dans les boutons. Le slug reste `synthesia`, pour ne pas casser les liens
+    // déjà partagés.
+    name: "Agent Synthesia B.O.S",
     category: "IA",
     status: "live",
     description:
-      "Assistant IA français qui rédige des textes créatifs et génère des images uniques à partir de simples descriptions.",
+      "Assistant IA français qui rédige et génère des images à partir d'une simple description. Devenu un poste de travail complet : modèles prêts à l'emploi, dictée vocale, historique synchronisé, quatre formules d'abonnement.",
     goal: "Rendre l'IA utile sur des tâches concrètes, sans courbe d'apprentissage.",
-    tech: ["Lovable", "IA générative (texte & image)"],
+    tech: ["Lovable", "API GPT-5 & Gemini", "Abonnements", "Dictée vocale"],
     url: "https://synthesia-ia.lovable.app/",
     image: "/projets/synthesia.webp",
     accent: "#6D5DFB",
@@ -48,9 +52,9 @@ export const projects: Project[] = [
     category: "Environnement",
     status: "live",
     description:
-      "Identifie les plantes par photo grâce à l'IA. Bibliothèque botanique, défis et tutoriels pour rendre l'écologie concrète.",
+      "Identifie les plantes par photo grâce à l'IA. Bibliothèque botanique, défis, tutoriels — et un programme pédagogique pour les classes, de la maternelle au lycée.",
     goal: "Transformer une simple photo en compréhension du vivant.",
-    tech: ["Lovable", "Reconnaissance d'image par IA"],
+    tech: ["Lovable", "Reconnaissance d'image par IA", "Abonnements", "Offre enseignant"],
     url: "https://ecoleaf.site/",
     image: "/projets/ecoleaf.webp",
     accent: "#34D399",
@@ -62,9 +66,9 @@ export const projects: Project[] = [
     category: "Formation",
     status: "live",
     description:
-      "Plateforme complète de formation (business, mindset, IA, marketing) : e-books, mini-formations, packs et espace membre. Méthodes concrètes, sans blabla.",
+      "Plateforme complète de formation (business, mindset, IA, marketing) : e-books, packs, vidéothèque classée par thème, blog, communauté et espace membre. Méthodes concrètes, sans blabla.",
     goal: "Transmettre des méthodes business directement applicables.",
-    tech: ["Lovable", "Stripe", "Brevo", "Espace membre", "SEO"],
+    tech: ["Lovable", "Stripe", "Stripe Climate", "Brevo", "Espace membre", "Blog SEO"],
     url: "https://mindsetbusinesslab.store/",
     image: "/projets/mindset.webp",
     accent: "#C9A227",
@@ -76,7 +80,7 @@ export const projects: Project[] = [
     category: "Développement",
     status: "live",
     description:
-      "Portail immersif d'exploration de l'Univers : Système solaire 3D temps réel, chronologie du cosmos, Voie lactée interactive, formation de la Terre.",
+      "Portail immersif d'exploration de l'Univers : trois explorateurs 3D temps réel — Système solaire, Voie lactée, trou noir — plus la chronologie du cosmos, la formation de la Terre et les distances à l'échelle.",
     goal: "Apprendre le développement web moderne — et le prouver.",
     tech: ["Three.js / WebGL", "Claude Code", "GitHub", "Lovable"],
     url: "https://cosmos-univers.lovable.app/",
@@ -90,7 +94,7 @@ export const projects: Project[] = [
     category: "E-commerce",
     status: "live",
     description:
-      "Marque premium autour d'une laisse double intelligente pour promener deux chiens sans nœuds : « Zéro nœud. Zéro chaos. »",
+      "Marque premium autour d'une laisse double intelligente — anti-nœuds 360°, LED, porte-sacs — pour promener deux chiens sans nœuds : « Zéro nœud. Zéro chaos. »",
     goal: "Construire une marque complète, du produit à l'acquisition.",
     tech: ["Shopify", "Branding", "Publicité en ligne", "Funnels"],
     // Le domaine apex sert un certificat expiré : depuis l'extérieur,
@@ -111,7 +115,7 @@ export const projects: Project[] = [
     category: "E-commerce",
     status: "paused",
     description:
-      "Premier projet e-commerce : une vitrine de créations et produits personnalisés (t-shirts, pulls, tote bags, mugs, art mural), vendus sur Etsy.",
+      "Premier projet e-commerce : une vitrine de créations et produits personnalisés (t-shirts, pulls, tote bags, mugs, art mural), avec un configurateur d'affiche sur mesure. Vendus sur Etsy.",
     goal: "Le point de départ e-commerce de l'écosystème.",
     tech: ["Lovable", "Etsy", "Print-on-demand", "Design graphique"],
     url: "https://eydendesigns.lovable.app/",

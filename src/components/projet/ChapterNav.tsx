@@ -24,6 +24,10 @@ export function ChapterNav({ projet }: { projet: ProjectDetail }) {
       const t = e.target as HTMLElement | null;
       if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
       if (t?.isContentEditable) return;
+      // Un dialogue ouvert (l'agrandissement d'un écran) se sert des mêmes
+      // flèches pour passer d'une image à l'autre. Changer de chapitre sous
+      // lui reviendrait à répondre deux fois à la même touche.
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
 
       const i = actif < 0 ? 0 : actif;
       const j = e.key === "ArrowLeft" ? i - 1 : i + 1;

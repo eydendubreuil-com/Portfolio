@@ -46,7 +46,9 @@ export interface ProjectDetail {
 export const projectDetails: ProjectDetail[] = [
   {
     slug: "synthesia",
-    name: "Synthesia",
+    // Nom affiché : celui du produit en ligne. Les chapitres continuent de dire
+    // « Synthesia » dans leur prose, qui est la forme courte, pas une erreur.
+    name: "Agent Synthesia B.O.S",
     categories: ["Intelligence artificielle"],
     status: "En ligne",
     accent: "#6D5DFB",

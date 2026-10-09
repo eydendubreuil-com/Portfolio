@@ -7,7 +7,7 @@ export const site = {
   email: "eyden.dubreuil@gmail.com",
   title: "Eyden — Entrepreneur, créateur et développeur de projets IA",
   description:
-    "Eyden construit un écosystème de projets qui mêlent IA, business et technologie : Synthesia, EcoLeaf, MindSet & Business Lab, Cosmos, PawVolt.",
+    "Eyden construit un écosystème de projets qui mêlent IA, business et technologie : Agent Synthesia B.O.S, EcoLeaf, MindSet & Business Lab, Cosmos, PawVolt.",
   /* `handle` est ce qui s'affiche : un pseudo se retient, pas une URL. */
   socials: [
     {
