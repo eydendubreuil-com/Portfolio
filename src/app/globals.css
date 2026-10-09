@@ -1,0 +1,348 @@
+@import "tailwindcss";
+@import "../styles/animations.css";
+
+/* Par défaut, Tailwind v4 branche `dark:` sur `prefers-color-scheme`, pas sur
+   une classe. Or le site force un unique thème sombre via `.dark` sur <html>.
+   Sans cette redéfinition, un visiteur dont l'OS est en mode clair perdrait
+   toutes les variantes `dark:` de la barre de navigation : le libellé actif
+   tomberait en `text-black` sur fond bleu nuit, illisible.
+   Vérifié avant ajout : aucune autre utilitaire `dark:` dans le projet. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Tokens — source de vérité : docs/STYLE.md (Partie 3 du document de brief).
+   Aucun hex en dur ailleurs dans le projet.
+   ========================================================================== */
+
+@theme {
+  /* Noir bleuté clair : le fond monte en luminosité et en bleu par rapport
+     au navy quasi noir d'origine, qui écrasait tout. */
+  --color-bg: #0b1224;
+  --color-surface: #121b33;
+  --color-card: #1a2544;
+  --color-card-elevated: #223057;
+
+  --color-ink: #f4f6fb;
+  --color-ink-muted: #b8c2d9;
+  /* Relevé de #6C7590 : sur le fond plus clair, l'ancienne valeur tombait
+     à 2,8:1 sur une carte survolée. #939DB6 tient AA (≥ 4,5:1) partout. */
+  --color-ink-faint: #939db6;
+
+  --color-primary: #5b8cff;
+  --color-secondary: #6e56cf;
+  --color-accent: #2ed3f6;
+
+  --color-status-live: #34d399;
+  --color-status-building: #f5a524;
+  --color-status-planned: #939db6;
+
+  /* Satoshi n'est pas sur Google Fonts. Déposer les fichiers dans public/fonts/
+     et ajouter un @font-face pour l'activer ; Inter assure le rendu d'ici là. */
+  --font-display: "Satoshi", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  --line: rgba(184, 194, 217, 0.1);
+  --line-strong: rgba(184, 194, 217, 0.2);
+
+  --grad-signature: linear-gradient(120deg, #5b8cff 0%, #6e56cf 52%, #2ed3f6 100%);
+
+  /* Consommée par AnimatedRays. Une couleur non définie rendrait tout le
+     `repeating-linear-gradient` invalide, et la couche de rayures ne
+     s'afficherait pas — seul l'arc-en-ciel resterait. */
+  --stripe-color: #ffffff;
+
+  --glass-bg: rgba(18, 27, 51, 0.76);
+  --glass-blur: 16px;
+
+  /* Grille d'onde (WaveGridBackground). Lues par le composant, qui peint sur
+     un canvas et ne peut donc pas consommer une classe Tailwind.
+     `--wave-base` est la teinte au repos : volontairement proche du fond, la
+     grille ne doit se deviner que par intermittence. `--wave-high` est la
+     crête et le halo sous le curseur — c'est l'accent primaire du site, pas
+     le bleu électrique de la démo, qui sortait de la palette. */
+  --wave-base: #243154;
+  --wave-high: #5b8cff;
+
+  --glow-primary: 0 0 0 1px rgba(91, 140, 255, 0.2),
+    0 8px 40px -12px rgba(91, 140, 255, 0.25);
+  --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+
+  --fs-hero: clamp(3.5rem, 9vw, 8rem);
+  --fs-h1: clamp(2.5rem, 5vw, 4rem);
+  --fs-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --fs-h3: 1.25rem;
+  --fs-lead: clamp(1.125rem, 1.6vw, 1.375rem);
+  --fs-body: 1.0625rem;
+  --fs-label: 0.75rem;
+
+  --container-site: 1400px;
+  --space-section: 120px;
+  --space-section-lg: 180px;
+  --nav-height: 72px;
+
+  --dur-fast: 160ms;
+  --dur-base: 420ms;
+  --dur-slow: 900ms;
+}
+
+/* ==========================================================================
+   Reset et base.
+
+   Impérativement dans @layer base : hors layer, un sélecteur d'élément comme
+   `a` ou `p` bat TOUTES les utilitaires Tailwind (le CSS sans layer gagne
+   toujours contre le CSS en layer). Sans ça, `text-bg` et les marges `mt-*`
+   sont silencieusement ignorées.
+   ========================================================================== */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    min-width: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--nav-height) + 24px);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: rgba(91, 140, 255, 0.3);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* ==========================================================================
+   Utilitaires de composition — en @layer components pour rester surchargeables.
+   ========================================================================== */
+
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: var(--container-site);
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  @media (min-width: 1024px) {
+    .container-site {
+      padding-inline: 80px;
+    }
+  }
+
+  /* Le vide est le budget premium du site : dernier réflexe à sacrifier. */
+  .section {
+    padding-block: var(--space-section);
+  }
+
+  @media (min-width: 1024px) {
+    .section {
+      padding-block: var(--space-section-lg);
+    }
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    /* Pas de doublon `-webkit-` écrit à la main : le minifieur (Lightning CSS)
+       fusionne les deux et ne garde QUE la version préfixée, que Chromium ne
+       reconnaît pas (CSS.supports('-webkit-backdrop-filter') === false). Le
+       flou du verre disparaissait alors sur tout le site. Lightning CSS
+       préfixe seul selon les cibles ; on lui laisse le travail. */
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--line);
+  }
+
+  /* Posée par ContextCursor sur la seule zone survolée, jamais globalement :
+     masquer le curseur système partout rend les champs et le texte
+     sélectionnable inutilisables. Retirée dès que le pointeur sort. */
+  .curseur-cache,
+  .curseur-cache * {
+    cursor: none;
+  }
+
+  .hairline-gradient {
+    height: 1px;
+    background: var(--grad-signature);
+    border: 0;
+  }
+
+  /* Voile de section, à la place de `bg-surface` sur les sections elles-mêmes.
+     La grille d'onde est posée en `-z-10`, donc sous le contenu : un aplat
+     opaque la masquerait complètement et l'effet ne se verrait que dans le
+     hero. Les cartes et les listes, elles, gardent un fond plein — c'est là
+     que se lit le texte dense. */
+  .surface-veil {
+    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  }
+
+  /* Même rôle, teinte de fond. Toutes les sections doivent porter un voile,
+     aucune ne doit laisser passer la grille à pleine intensité : mesuré avec le
+     curseur posé sur le texte, une crête atteint presque `--wave-high` et fait
+     tomber un eyebrow à 1,58:1.
+
+     Le pourcentage est tout le compromis. À 86 % le texte tenait largement mais
+     la grille ne se voyait plus, ce qui vidait l'effet de son sens. 75 % est le
+     point trouvé par mesure : la grille reste franchement lisible sous le
+     curseur et l'eyebrow le plus pâle du site (`--color-ink-faint`) garde sa
+     conformité AA. En dessous, il la perd. */
+  .bg-veil {
+    background: color-mix(in srgb, var(--color-bg) 75%, transparent);
+  }
+
+  /* --------------------------------------------------------------------
+     Barre de navigation « spotlight ».
+
+     Le composant réclame quatre classes qu'il ne définit pas lui-même
+     (spotlight-nav, -bg, glass-border, -shadow) plus deux variables de
+     couleur. Elles vivent ici et non dans un <style jsx> local, comme tout
+     le reste du CSS d'effet du projet, et parce que la démo d'origine les
+     tirait d'une feuille annexe absente de ce dépôt.
+
+     Les valeurs sont celles du site : verre bleu nuit, pas le gris neutre
+     de la démo, qui trouait la barre au-dessus du hero.
+     -------------------------------------------------------------------- */
+  .spotlight-nav {
+    /* Reprises de la démo : lumière noire sur fond clair. Le site n'a qu'un
+       thème sombre, mais on garde la branche claire pour que le composant
+       reste autonome s'il est réutilisé ailleurs. */
+    --spotlight-color: rgba(0, 0, 0, 0.08);
+    --ambience-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .dark .spotlight-nav {
+    /* Le halo au survol emprunte l'accent du site plutôt qu'un blanc pur :
+       sur ce fond bleu, un blanc à 15 % vire au gris et ne se rattache à
+       rien. La barre lumineuse de l'onglet actif, elle, reste franche. */
+    --spotlight-color: rgba(91, 140, 255, 0.28);
+    --ambience-color: var(--color-primary);
+  }
+
+  .spotlight-nav-bg {
+    background: var(--glass-bg);
+    /* Pas de doublon `-webkit-` écrit à la main : le minifieur (Lightning CSS)
+       fusionne les deux et ne garde QUE la version préfixée, que Chromium ne
+       reconnaît pas (CSS.supports('-webkit-backdrop-filter') === false). Le
+       flou du verre disparaissait alors sur tout le site. Lightning CSS
+       préfixe seul selon les cibles ; on lui laisse le travail. */
+    backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .glass-border {
+    /* `border` explicite et non `border-width` : le preflight Tailwind pose
+       `border: 0 solid`, donc une largeur sans couleur hériterait de
+       currentColor et cerclerait la barre d'un trait ink. */
+    border: 1px solid var(--line);
+  }
+
+  .spotlight-nav-shadow {
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 32px -12px rgba(5, 9, 20, 0.8);
+  }
+
+  .measure {
+    max-width: 68ch;
+  }
+
+  .lead {
+    font-size: var(--fs-lead);
+    color: var(--color-ink-muted);
+  }
+}
+
+/* ==========================================================================
+   Accessibilité
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
